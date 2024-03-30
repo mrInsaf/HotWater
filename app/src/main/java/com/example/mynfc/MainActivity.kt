@@ -141,7 +141,8 @@ class MainActivity : ComponentActivity() {
             val bIndex = mfc.sectorToBlock(12) + i
             try {
                 mfc.connect()
-                val auth = mfc.authenticateSectorWithKeyA(12, SectorKeys.SECTOR12)
+                val auth = false
+//                val auth = mfc.authenticateSectorWithKeyA(12, SectorKeys.SECTOR12)
                 if (auth) {
                     var floatBalance = newBalance.toFloat()
                     floatBalance *= 100
@@ -198,11 +199,14 @@ class MainActivity : ComponentActivity() {
         println("sector count: $secCount")
 
         for (j in 0 until secCount) {
-            val authKey = when(j) {
-                10 -> SectorKeys.SECTOR10
-                12 -> SectorKeys.SECTOR12
-                else -> MifareClassic.KEY_DEFAULT
-            }
+//            val authKey = when(j) {
+//                10 -> SectorKeys.SECTOR10
+//                12 -> SectorKeys.SECTOR12
+//                else -> MifareClassic.KEY_DEFAULT
+//            }
+
+            val authKey = MifareClassic.KEY_DEFAULT
+
             authA = mfc.authenticateSectorWithKeyA(j, authKey)
             if (authA) {
                 bCount = mfc.getBlockCountInSector(j)
