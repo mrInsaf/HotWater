@@ -114,7 +114,7 @@ class MainActivity : ComponentActivity() {
             launch {
             }
         }
-        mAdapter = NfcAdapter.getDefaultAdapter(this);
+        mAdapter = NfcAdapter.getDefaultAdapter(this)
         mPendingIntent = PendingIntent.getActivity(
             this, 0, Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_MUTABLE
@@ -271,36 +271,43 @@ class MainActivity : ComponentActivity() {
                 getHexString(sector12Key, sector12Key?.size ?: 0)
 
         for (j in 0 until secCount) {
-            val authKey = when(j) {
-                10 -> sector10Key
-                12 -> sector12Key
-                else -> MifareClassic.KEY_DEFAULT
-            }
-            authA = mfc.authenticateSectorWithKeyA(j, authKey)
-            if (authA) {
-                bCount = mfc.getBlockCountInSector(j)
-                bIndex = mfc.sectorToBlock(j)
-                for (i in 0 until bCount) {
-
-                    data = mfc.readBlock(bIndex)
-                    Log.i(TAG, getHexString(data, data?.size ?: 0))
-//                        println(getHexString(data, data?.size ?: 0))
-                    if (j == 12 && i == 1) {
-                        val balanceData = data.take(4).toByteArray()
-                        val bigInteger = BigInteger(balanceData)
-                        balance = (bigInteger.toFloat() / 100).toString()
-                        println(getHexString(data, data.size))
-                    }
-                    else if (j == 10 && i == 2) {
-                        print("block $i ")
-                        println(getHexString(data, data?.size ?: 0))
-                        name = String(data)
-                    }
-                    bIndex++
+            try {
+                val authKey = when (j) {
+                    10 -> sector10Key
+                    12 -> sector12Key
+                    else -> MifareClassic.KEY_DEFAULT
                 }
-            } else {
-                println("sector $j: Auth failed")
+                authA = mfc.authenticateSectorWithKeyA(j, authKey)
+                if (authA) {
+                    bCount = mfc.getBlockCountInSector(j)
+                    bIndex = mfc.sectorToBlock(j)
+                    for (i in 0 until bCount) {
+
+                        data = mfc.readBlock(bIndex)
+                        Log.i(TAG, getHexString(data, data?.size ?: 0))
+//                        println(getHexString(data, data?.size ?: 0))
+                        if (j == 12 && i == 1) {
+                            val balanceData = data.take(4).toByteArray()
+                            val bigInteger = BigInteger(balanceData)
+                            balance = (bigInteger.toFloat() / 100).toString()
+                            println(getHexString(data, data.size))
+                        } else if (j == 10 && i == 2) {
+                            print("block $i ")
+                            println(getHexString(data, data?.size ?: 0))
+                            name = String(data)
+                        }
+                        bIndex++
+                    }
+                } else {
+                    println("sector $j: Auth failed")
+                }
             }
+            catch (e: Exception){
+                println(e)
+                debugMessage += e
+            }
+
+
         }
         mfc.close()
         return@coroutineScope arrayOf(cardId, sector10Key, sector12Key)
