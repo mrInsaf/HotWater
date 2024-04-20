@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -76,6 +77,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 
 import com.example.mynfc.ui.theme.MyNFCTheme
@@ -114,11 +116,11 @@ val topUpHistory = listOf(
 
 class MainActivity : ComponentActivity() {
 
+
     private lateinit var mAdapter: NfcAdapter
     private lateinit var mPendingIntent: PendingIntent
     private lateinit var mFilters: Array<IntentFilter>
     private lateinit var mTechLists: Array<Array<String>>
-
     @RequiresApi(Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -676,24 +678,37 @@ fun CheckBalanceScreen(username: String, balance: Int, modifier: Modifier = Modi
 }
 
 
+@RequiresApi(Q)
 @Composable
 fun MyNavbar(modifier: Modifier = Modifier) {
-    BottomAppBar (
-        modifier = modifier
-            .height(100.dp),
-        containerColor = Color.Transparent
-    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .advancedShadow(
+                    color = Color.Black,
+                    alpha = 0.05f,
+                    cornersRadius = 16.dp,
+                    shadowBlurRadius = 20.dp,
+                    offsetY = (-8).dp,
+                )
+                .background(
+                    color = Color.White,
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .heightIn(min = 10.dp),
         ) {
-            MyNavbarButton(text = "Проверить баланс", iconId = R.drawable.statistics)
-            MyNavbarButton(text = "Пополнить баланс", iconId = R.drawable.top)
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = paddingStart, vertical = 16.dp)
+            ) {
+                MyNavbarButton(text = "Проверить баланс", iconId = R.drawable.statistics)
+                MyNavbarButton(text = "Пополнить баланс", iconId = R.drawable.top)
+            }
         }
-    }
 }
+@RequiresApi(Q)
 @Preview
 @Composable
 fun MyNavbarPreview() {
@@ -706,14 +721,19 @@ fun MyNavbarButton(iconId: Int, text: String, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        IconButton(onClick = { }) {
-            Icon (
-                painterResource(id = iconId),
-                modifier = modifier.size(24.dp),
-                contentDescription = text,
-            )
-        }
-        Text(text = text, textAlign = TextAlign.Center, modifier = Modifier.width(73.dp))
+        Icon (
+            painterResource(id = iconId),
+            modifier = modifier.size(20.dp),
+            contentDescription = text,
+        )
+        Text(
+            text = text,
+            textAlign = TextAlign.Center,
+            fontFamily = FontFamily(
+                Font(R.font.montserrat_light)
+            ),
+            fontSize = 12.sp,
+            modifier = modifier.width(73.dp))
     }
 
 }
