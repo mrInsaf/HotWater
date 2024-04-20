@@ -10,11 +10,15 @@ import android.nfc.Tag
 import android.nfc.tech.MifareClassic
 import android.os.Build.VERSION_CODES.Q
 import android.os.Bundle
+import android.text.Layout
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -103,6 +107,11 @@ var isAddingBalance by  mutableStateOf(false)
 var newBalance by mutableStateOf("0")
 var debugMessage by mutableStateOf("Начальное сообщение")
 
+val topUpHistory = listOf(
+    mapOf("date" to "20.04.2024", "value" to "+50 ¥"),
+    mapOf("date" to "21.04.2024", "value" to "-36 ¥"),
+)
+
 class MainActivity : ComponentActivity() {
 
     private lateinit var mAdapter: NfcAdapter
@@ -110,6 +119,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var mFilters: Array<IntentFilter>
     private lateinit var mTechLists: Array<Array<String>>
 
+    @RequiresApi(Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         runBlocking() {
@@ -141,7 +151,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainPage()
+                    CheckBalanceScreen(username = "Инсаф", balance = 123)
                 }
             }
         }
@@ -535,33 +545,40 @@ fun MainPage(modifier: Modifier = Modifier) {
 
 @RequiresApi(Q)
 @Composable
-fun MainBlock(mainInfo: String, secondaryInfo: String, modifier: Modifier = Modifier) {
+fun CustomBlock(title: String = "title", modifier: Modifier = Modifier, content: @Composable () -> Unit, ) {
     Column(
         verticalArrangement = Arrangement.Center,
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .advancedShadow(
                 color = Color.Black,
-                alpha = 0.1f,
+                alpha = 0.05f,
                 cornersRadius = 16.dp,
-                shadowBlurRadius = 80.dp,
+                shadowBlurRadius = 20.dp,
                 offsetY = 8.dp,
             )
             .background(
                 color = Color.White,
-                shape = RoundedCornerShape(24.dp) // Указываем радиус скругления
+                shape = RoundedCornerShape(24.dp)
             )
-            .height(70.dp)
-            .padding(horizontal = paddingStart)
-
+            .padding(horizontal = paddingStart, vertical = 12.dp)
     ) {
         Text(
-            text = secondaryInfo,
+            text = title,
             style = TextStyle(fontSize = 12.sp, color = Color.LightGray),
             fontFamily = FontFamily(
                 Font(R.font.montserrat_regular)
             )
         )
+        content()
+    }
+    Spacer(modifier = modifier.size(paddingTop))
+}
+
+@RequiresApi(Q)
+@Composable
+fun MainBlock(mainInfo: String, secondaryInfo: String, modifier: Modifier = Modifier) {
+    CustomBlock(title = secondaryInfo) {
         Text(
             text = mainInfo,
             style = TextStyle(fontSize = 24.sp, color = Color.Black),
@@ -573,15 +590,63 @@ fun MainBlock(mainInfo: String, secondaryInfo: String, modifier: Modifier = Modi
 }
 
 @RequiresApi(Q)
-@Preview
 @Composable
-fun TopUpScreenPreview() {
-    TopUpScreen()
+fun SecondaryBlock(mainInfo: String?, secondaryInfo: String?, modifier: Modifier = Modifier) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(70.dp)
+            .border(BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(16.dp))
+            .padding(horizontal = paddingStart)
+
+        ) {
+        Text(
+            text = secondaryInfo ?: "",
+            style = TextStyle(fontSize = 12.sp, color = Color.LightGray),
+            fontFamily = FontFamily(
+                Font(R.font.montserrat_regular)
+            )
+        )
+        Text(
+            text = mainInfo ?: "",
+            style = TextStyle(fontSize = 24.sp, color = Color(0xFF7E7E7E),
+            fontFamily = FontFamily(
+                Font(R.font.montserrat_medium)
+            )
+        )
+        )
+    }
+    Spacer(modifier = modifier.size(paddingTop))
 }
 
 @RequiresApi(Q)
 @Composable
-fun TopUpScreen(modifier: Modifier = Modifier) {
+fun TopUpHistoryBlock(modifier: Modifier = Modifier) {
+    CustomBlock(title = "История пополнений") {
+        for (map in topUpHistory) {
+            SecondaryBlock(mainInfo = map["value"], secondaryInfo = map["date"])
+        }
+    }
+}
+
+@RequiresApi(Q)
+@Composable
+fun TopUpHistoryGraphicBlock(modifier: Modifier = Modifier) {
+    CustomBlock(title = "Статистика") {
+    }
+}
+
+@RequiresApi(Q)
+@Preview
+@Composable
+fun CheckBalanceScreenPreview() {
+    CheckBalanceScreen(username = "Инсаф", balance = 123)
+}
+
+@RequiresApi(Q)
+@Composable
+fun CheckBalanceScreen(username: String, balance: Int, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -599,20 +664,36 @@ fun TopUpScreen(modifier: Modifier = Modifier) {
             modifier = modifier
                 .padding(start = paddingStart, top = paddingTop, bottom = 38.dp)
         )
-        MainBlock(mainInfo = "Main", secondaryInfo = "Secondary")
+        MainBlock(mainInfo = username, secondaryInfo = "Добрый день,")
+        MainBlock(mainInfo = "$balance ¥", secondaryInfo = "Ваш баланс")
+        TopUpHistoryBlock()
+        TopUpHistoryGraphicBlock()
+
+        Spacer(modifier = Modifier.weight(1f))
+        MyNavbar()
     }
+
 }
+
 
 @Composable
 fun MyNavbar(modifier: Modifier = Modifier) {
     BottomAppBar (
         modifier = modifier
-            .height(100.dp)
+            .height(100.dp),
+        containerColor = Color.Transparent
     ) {
-        MyNavbarButton(text = "Пополнить баланс", iconId = R.drawable.statistics)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            MyNavbarButton(text = "Проверить баланс", iconId = R.drawable.statistics)
+            MyNavbarButton(text = "Пополнить баланс", iconId = R.drawable.top)
+        }
     }
 }
-
 @Preview
 @Composable
 fun MyNavbarPreview() {
@@ -622,16 +703,17 @@ fun MyNavbarPreview() {
 @Composable
 fun MyNavbarButton(iconId: Int, text: String, modifier: Modifier = Modifier) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Button(onClick = { }) {
+        IconButton(onClick = { }) {
             Icon (
                 painterResource(id = iconId),
-                modifier = modifier.size(20.dp),
+                modifier = modifier.size(24.dp),
                 contentDescription = text,
             )
         }
-        Text(text = "Проверить баланс", Modifier.width(73.dp))
+        Text(text = text, textAlign = TextAlign.Center, modifier = Modifier.width(73.dp))
     }
 
 }
