@@ -26,8 +26,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.BottomAppBar
@@ -277,30 +279,40 @@ class MainActivity : ComponentActivity() {
                     12 -> sector12Key
                     else -> MifareClassic.KEY_DEFAULT
                 }
-                authA = mfc.authenticateSectorWithKeyA(j, authKey)
-                if (authA) {
-                    bCount = mfc.getBlockCountInSector(j)
-                    bIndex = mfc.sectorToBlock(j)
-                    for (i in 0 until bCount) {
+                try{
+                    authA = mfc.authenticateSectorWithKeyA(j, authKey)
+                    if (authA) {
+                        debugMessage += "Сектор $j авторизовано\n"
+                        bCount = mfc.getBlockCountInSector(j)
+                        bIndex = mfc.sectorToBlock(j)
+                        for (i in 0 until bCount) {
 
-                        data = mfc.readBlock(bIndex)
-                        Log.i(TAG, getHexString(data, data?.size ?: 0))
+                            data = mfc.readBlock(bIndex)
+                            Log.i(TAG, getHexString(data, data?.size ?: 0))
 //                        println(getHexString(data, data?.size ?: 0))
-                        if (j == 12 && i == 1) {
-                            val balanceData = data.take(4).toByteArray()
-                            val bigInteger = BigInteger(balanceData)
-                            balance = (bigInteger.toFloat() / 100).toString()
-                            println(getHexString(data, data.size))
-                        } else if (j == 10 && i == 2) {
-                            print("block $i ")
-                            println(getHexString(data, data?.size ?: 0))
-                            name = String(data)
+                            if (j == 12 && i == 1) {
+                                val balanceData = data.take(4).toByteArray()
+                                val bigInteger = BigInteger(balanceData)
+                                balance = (bigInteger.toFloat() / 100).toString()
+                                debugMessage += "Полученный баланс $balance\n"
+                                println(getHexString(data, data.size))
+                            } else if (j == 10 && i == 2) {
+                                print("block $i ")
+                                println(getHexString(data, data?.size ?: 0))
+                                name = String(data)
+                                debugMessage += "Полученное имя $name\n"
+                            }
+                            bIndex++
                         }
-                        bIndex++
+                    } else {
+                        println("sector $j: Auth failed")
+                        debugMessage += "Сектор $j НЕ авторизовано"
                     }
-                } else {
-                    println("sector $j: Auth failed")
                 }
+                catch (e: Exception) {
+                    debugMessage += e
+                }
+
             }
             catch (e: Exception){
                 println(e)
@@ -418,6 +430,7 @@ fun MainPage(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .background(color = colorResource(id = R.color.color5))
+            .verticalScroll(rememberScrollState())
     ) {
         Column {
             Column {
@@ -449,6 +462,10 @@ fun MainPage(modifier: Modifier = Modifier) {
                     textAlign = TextAlign.Start,
                     fontSize = 24.sp,
                     modifier = modifier
+                )
+                Text(
+                    text = debugMessage,
+                    color = colorResource(id = R.color.color1),
                 )
             }
             Spacer(modifier = modifier.size(48.dp))
