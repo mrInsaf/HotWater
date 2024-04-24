@@ -3,6 +3,8 @@ package com.example.mynfc.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
@@ -27,7 +29,8 @@ fun MyNavbarButton(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = modifier.clickable(onClick = onClick)
+        modifier = modifier
+            .clickable(onClick = onClick)
     ) {
         Icon (
             painterResource(id = iconId),
@@ -42,6 +45,6 @@ fun MyNavbarButton(
             ),
             fontSize = 12.sp,
             lineHeight = 12.sp,
-            modifier = modifier.width(80.dp))
+            modifier = modifier.width(120.dp))
     }
 }

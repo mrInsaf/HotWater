@@ -47,12 +47,17 @@ fun TopUpHistoryGraphicBlock(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 fun CheckBalanceScreenPreview() {
-    CheckBalanceScreen(username = "Инсаф", balance = "123")
+    CheckBalanceScreen(username = "Инсаф", cardBalance = "123", serverBalance = "0")
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun CheckBalanceScreen(username: String, balance: String, modifier: Modifier = Modifier) {
+fun CheckBalanceScreen(
+    username: String,
+    cardBalance: String,
+    serverBalance: String,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -71,8 +76,21 @@ fun CheckBalanceScreen(username: String, balance: String, modifier: Modifier = M
                 .padding(start = paddingStart, top = paddingTop, bottom = 38.dp)
         )
         MainBlock(mainInfo = username, secondaryInfo = "Имя")
-        MainBlock(mainInfo = "$balance ¥", secondaryInfo = "Ваш баланс")
-        TopUpHistoryBlock()
+        MainBlock(
+            mainInfo = "$cardBalance ¥",
+            secondaryInfo = "Баланс на карте",
+            buttonText = "Перенести на сервер",
+        ) {
+            println("yo")
+        }
+        MainBlock(
+            mainInfo = "$serverBalance ¥",
+            secondaryInfo = "Баланс на сервере",
+            buttonText = "Перенести на карту",
+        ) {
+            println("yo")
+        }
+//        TopUpHistoryBlock()
         TopUpHistoryGraphicBlock()
 
         Spacer(modifier = Modifier.weight(1f))

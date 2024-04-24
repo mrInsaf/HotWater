@@ -34,7 +34,7 @@ fun MyNavbar(modifier: Modifier = Modifier) {
                 color = Color.White,
                 shape = RoundedCornerShape(24.dp)
             )
-            .heightIn(min = 10.dp),
+            .heightIn(min = 10.dp, max = 80.dp),
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -45,7 +45,7 @@ fun MyNavbar(modifier: Modifier = Modifier) {
             MyNavbarButton(text = "Проверить баланс", iconId = R.drawable.statistics) {
                 println("Проверить баланс")
             }
-            MyNavbarButton(text = "Пополнить баланс", iconId = R.drawable.top) {
+            MyNavbarButton(text = "Посмотреть историю", iconId = R.drawable.history) {
                 println("Пополнить баланс")
             }
         }
