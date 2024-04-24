@@ -19,6 +19,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -79,6 +80,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
+import com.example.mynfc.screens.CheckBalanceScreen
 
 import com.example.mynfc.ui.theme.MyNFCTheme
 import com.example.mynfc.ui.theme.paddingStart
@@ -153,7 +155,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CheckBalanceScreen(username = "Инсаф", balance = 123)
+                    CheckBalanceScreen(username = name, balance = balance)
                 }
             }
         }
@@ -258,7 +260,7 @@ class MainActivity : ComponentActivity() {
         return byteArray
     }
 
-    private suspend fun readData(tag: Tag?) = coroutineScope {
+    private suspend fun readData(tag: Tag?): Array<ByteArray?> = coroutineScope {
         val mfc = MifareClassic.get(tag)
         mfc.connect()
         val cardId = tag?.id
@@ -295,11 +297,10 @@ class MainActivity : ComponentActivity() {
                 bCount = mfc.getBlockCountInSector(j)
                 bIndex = mfc.sectorToBlock(j)
                 for (i in 0 until bCount) {
-
                     data = mfc.readBlock(bIndex)
                     Log.i(TAG, getHexString(data, data?.size ?: 0))
 //                        println(getHexString(data, data?.size ?: 0))
-                    if (j == 12 && i == 1) {
+                    if (j == 12 && i == 0) {
                         val balanceData = data.take(4).toByteArray()
                         val bigInteger = BigInteger(balanceData)
                         balance = (bigInteger.toFloat() / 100).toString()
@@ -308,7 +309,7 @@ class MainActivity : ComponentActivity() {
                     else if (j == 10 && i == 2) {
                         print("block $i ")
                         println(getHexString(data, data?.size ?: 0))
-                        name = String(data)
+                        name = String(data.copyOfRange(0, data.size - 2))
                     }
                     bIndex++
                 }
@@ -544,231 +545,3 @@ fun MainPage(modifier: Modifier = Modifier) {
 //fun MyButtonPreview() {
 //    MyButton()
 //}
-
-@RequiresApi(Q)
-@Composable
-fun CustomBlock(title: String = "title", modifier: Modifier = Modifier, content: @Composable () -> Unit, ) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .advancedShadow(
-                color = Color.Black,
-                alpha = 0.05f,
-                cornersRadius = 16.dp,
-                shadowBlurRadius = 20.dp,
-                offsetY = 8.dp,
-            )
-            .background(
-                color = Color.White,
-                shape = RoundedCornerShape(24.dp)
-            )
-            .padding(horizontal = paddingStart, vertical = 12.dp)
-    ) {
-        Text(
-            text = title,
-            style = TextStyle(fontSize = 12.sp, color = Color.LightGray),
-            fontFamily = FontFamily(
-                Font(R.font.montserrat_regular)
-            )
-        )
-        content()
-    }
-    Spacer(modifier = modifier.size(paddingTop))
-}
-
-@RequiresApi(Q)
-@Composable
-fun MainBlock(mainInfo: String, secondaryInfo: String, modifier: Modifier = Modifier) {
-    CustomBlock(title = secondaryInfo) {
-        Text(
-            text = mainInfo,
-            style = TextStyle(fontSize = 24.sp, color = Color.Black),
-            fontFamily = FontFamily(
-                Font(R.font.montserrat_medium)
-            )
-        )
-    }
-}
-
-@RequiresApi(Q)
-@Composable
-fun SecondaryBlock(mainInfo: String?, secondaryInfo: String?, modifier: Modifier = Modifier) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(70.dp)
-            .border(BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(16.dp))
-            .padding(horizontal = paddingStart)
-
-        ) {
-        Text(
-            text = secondaryInfo ?: "",
-            style = TextStyle(fontSize = 12.sp, color = Color.LightGray),
-            fontFamily = FontFamily(
-                Font(R.font.montserrat_regular)
-            )
-        )
-        Text(
-            text = mainInfo ?: "",
-            style = TextStyle(fontSize = 24.sp, color = Color(0xFF7E7E7E),
-            fontFamily = FontFamily(
-                Font(R.font.montserrat_medium)
-            )
-        )
-        )
-    }
-    Spacer(modifier = modifier.size(paddingTop))
-}
-
-@RequiresApi(Q)
-@Composable
-fun TopUpHistoryBlock(modifier: Modifier = Modifier) {
-    CustomBlock(title = "История пополнений") {
-        for (map in topUpHistory) {
-            SecondaryBlock(mainInfo = map["value"], secondaryInfo = map["date"])
-        }
-    }
-}
-
-@RequiresApi(Q)
-@Composable
-fun TopUpHistoryGraphicBlock(modifier: Modifier = Modifier) {
-    CustomBlock(title = "Статистика") {
-    }
-}
-
-@RequiresApi(Q)
-@Preview
-@Composable
-fun CheckBalanceScreenPreview() {
-    CheckBalanceScreen(username = "Инсаф", balance = 123)
-}
-
-@RequiresApi(Q)
-@Composable
-fun CheckBalanceScreen(username: String, balance: Int, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(color = Color.White)
-    ) {
-        Text(
-            text = "My Voda",
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = Color.Black,
-            ),
-            fontFamily = FontFamily(
-                Font(R.font.montserrat_bold)
-            ),
-            modifier = modifier
-                .padding(start = paddingStart, top = paddingTop, bottom = 38.dp)
-        )
-        MainBlock(mainInfo = username, secondaryInfo = "Добрый день,")
-        MainBlock(mainInfo = "$balance ¥", secondaryInfo = "Ваш баланс")
-        TopUpHistoryBlock()
-        TopUpHistoryGraphicBlock()
-
-        Spacer(modifier = Modifier.weight(1f))
-        MyNavbar()
-    }
-
-}
-
-
-@RequiresApi(Q)
-@Composable
-fun MyNavbar(modifier: Modifier = Modifier) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .advancedShadow(
-                    color = Color.Black,
-                    alpha = 0.05f,
-                    cornersRadius = 16.dp,
-                    shadowBlurRadius = 20.dp,
-                    offsetY = (-8).dp,
-                )
-                .background(
-                    color = Color.White,
-                    shape = RoundedCornerShape(24.dp)
-                )
-                .heightIn(min = 10.dp),
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = paddingStart, vertical = 16.dp)
-            ) {
-                MyNavbarButton(text = "Проверить баланс", iconId = R.drawable.statistics)
-                MyNavbarButton(text = "Пополнить баланс", iconId = R.drawable.top)
-            }
-        }
-}
-@RequiresApi(Q)
-@Preview
-@Composable
-fun MyNavbarPreview() {
-    MyNavbar()
-}
-
-@Composable
-fun MyNavbarButton(iconId: Int, text: String, modifier: Modifier = Modifier) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon (
-            painterResource(id = iconId),
-            modifier = modifier.size(20.dp),
-            contentDescription = text,
-        )
-        Text(
-            text = text,
-            textAlign = TextAlign.Center,
-            fontFamily = FontFamily(
-                Font(R.font.montserrat_light)
-            ),
-            fontSize = 12.sp,
-            modifier = modifier.width(73.dp))
-    }
-
-}
-
-@RequiresApi(Q)
-fun Modifier.advancedShadow(
-    color: Color = Color.Black,
-    alpha: Float = 1f,
-    cornersRadius: Dp = 0.dp,
-    shadowBlurRadius: Dp = 0.dp,
-    offsetY: Dp = 0.dp,
-    offsetX: Dp = 0.dp
-) = drawBehind {
-
-    val shadowColor = color.copy(alpha = alpha).toArgb()
-    val transparentColor = color.copy(alpha = 0f).toArgb()
-
-    drawIntoCanvas {
-        val paint = Paint()
-        val frameworkPaint = paint.asFrameworkPaint()
-        frameworkPaint.color = transparentColor
-        frameworkPaint.setShadowLayer(
-            shadowBlurRadius.toPx(),
-            offsetX.toPx(),
-            offsetY.toPx(),
-            shadowColor
-        )
-        it.drawRoundRect(
-            0f,
-            0f,
-            this.size.width,
-            this.size.height,
-            cornersRadius.toPx(),
-            cornersRadius.toPx(),
-            paint
-        )
-    }
-}
