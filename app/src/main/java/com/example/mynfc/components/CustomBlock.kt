@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mynfc.R
@@ -25,7 +26,7 @@ import com.example.mynfc.ui.theme.paddingTop
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun CustomBlock(title: String = "title", modifier: Modifier = Modifier, content: @Composable () -> Unit, ) {
+fun CustomBlock(title: String = "title", modifier: Modifier = Modifier, spacerHeight: Dp = paddingTop, content: @Composable () -> Unit, ) {
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
@@ -52,5 +53,5 @@ fun CustomBlock(title: String = "title", modifier: Modifier = Modifier, content:
         )
         content()
     }
-    Spacer(modifier = modifier.size(paddingTop))
+    Spacer(modifier = modifier.size(spacerHeight))
 }

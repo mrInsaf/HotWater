@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.mynfc.R
-import com.example.mynfc.components.MyButton
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable

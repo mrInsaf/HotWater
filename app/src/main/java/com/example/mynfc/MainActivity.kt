@@ -55,10 +55,12 @@ import com.example.mynfc.screens.CheckBalanceScreen
 import com.example.mynfc.ui.theme.MyNFCTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -73,6 +75,7 @@ var name by mutableStateOf("")
 var isAddingBalance by  mutableStateOf(false)
 var newBalance by mutableStateOf("0")
 var debugMessage by mutableStateOf("Начальное сообщение")
+var completeWriting by mutableStateOf(false)
 
 val topUpHistory = listOf(
     mapOf("date" to "20.04.2024", "value" to "+50 ¥"),
@@ -118,7 +121,15 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CheckBalanceScreen(username = name, cardBalance = balance, serverBalance = "0")
+                    CheckBalanceScreen(
+                        username = name,
+                        cardBalance = balance,
+                        serverBalance = "0",
+                        completeWriting = completeWriting,
+                        isAddingBalance = isAddingBalance,
+                        onAddingBalanceChange = { isAddingBalance = true; println("is adding balance $isAddingBalance")},
+                        onNewBalanceChange = { newBalance = it; println("newbalance: $newBalance")},
+                        onDismiss = {isAddingBalance = false; println("is adding balance $isAddingBalance")})
                 }
             }
         }
@@ -136,6 +147,10 @@ class MainActivity : ComponentActivity() {
         val scope = CoroutineScope(EmptyCoroutineContext)
         val job = scope.launch {
             resolveIntent(intent!!, isAddingBalance)
+            withContext(Dispatchers.Main) {
+                isAddingBalance = false
+                println(isAddingBalance)
+            }
         }
     }
 
@@ -144,7 +159,13 @@ class MainActivity : ComponentActivity() {
         if (NfcAdapter.ACTION_TECH_DISCOVERED == action) {
             val tagFromIntent = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
             if (writeBalance) {
-                writeBalance(tagFromIntent)
+                try {
+                    writeBalance(tagFromIntent)
+                }
+                catch (e: Exception) {
+                    println(e)
+                    debugMessage += "\n $e"
+                }
             }
             else {
                 try {
@@ -160,6 +181,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun writeBalance(tag: Tag?) = coroutineScope {
+        println("started writing")
         val mfc = MifareClassic.get(tag)
         val readArray = readData(tag)
 
