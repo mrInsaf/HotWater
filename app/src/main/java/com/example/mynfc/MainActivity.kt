@@ -83,8 +83,6 @@ val topUpHistory = listOf(
 )
 
 class MainActivity : ComponentActivity() {
-
-
     private lateinit var mAdapter: NfcAdapter
     private lateinit var mPendingIntent: PendingIntent
     private lateinit var mFilters: Array<IntentFilter>
@@ -129,7 +127,7 @@ class MainActivity : ComponentActivity() {
                         isAddingBalance = isAddingBalance,
                         onAddingBalanceChange = { isAddingBalance = true; println("is adding balance $isAddingBalance")},
                         onNewBalanceChange = { newBalance = it; println("newbalance: $newBalance")},
-                        onDismiss = {isAddingBalance = false; println("is adding balance $isAddingBalance")})
+                        onDismiss = {isAddingBalance = false; completeWriting = false})
                 }
             }
         }
@@ -161,6 +159,7 @@ class MainActivity : ComponentActivity() {
             if (writeBalance) {
                 try {
                     writeBalance(tagFromIntent)
+                    completeWriting = true
                 }
                 catch (e: Exception) {
                     println(e)
@@ -354,179 +353,3 @@ class MainActivity : ComponentActivity() {
         return hexString.toString()
     }
 }
-
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-fun AddBalanceInput(onBalanceAdded: (Int) -> Unit) {
-    var inputValue by remember { mutableStateOf(0) }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    // Request focus when this composable is first added to the composition
-    val focusRequester = remember { FocusRequester() }
-    DisposableEffect(Unit) {
-        focusRequester.requestFocus()
-        onDispose { }
-    }
-
-    OutlinedTextField(
-        value = inputValue.toString(),
-        onValueChange = {
-            inputValue = it.toIntOrNull() ?: 0
-        },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-        label = { Text("Enter amount") },
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester),
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Button to submit the input
-    Button(
-        onClick = {
-            onBalanceAdded(inputValue)
-        }
-    ) {
-        Text("Add")
-    }
-
-    // Close the keyboard when the input is submitted
-    DisposableEffect(Unit) {
-        keyboardController?.show()
-        onDispose {
-            keyboardController?.hide()
-        }
-    }
-}
-
-@Composable
-fun MainPage(modifier: Modifier = Modifier) {
-    var balanceValue by remember { mutableStateOf(0) }
-    var textState by remember { mutableStateOf("") }
-    Column (
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier
-            .fillMaxSize()
-            .background(color = colorResource(id = R.color.color5))
-    ) {
-        Column {
-            Column {
-                Text(
-                    text = "Добрый день,",
-                    color = colorResource(id = R.color.color1),
-                    modifier = modifier
-                )
-                Text(
-                    text = name,
-                    color = colorResource(id = R.color.color1),
-                    fontSize = 24.sp,
-                    modifier = modifier
-                )
-            }
-            Spacer(modifier = modifier.size(48.dp))
-            Column (
-                horizontalAlignment = Alignment.Start,
-            ) {
-                Text(
-                    text = "Баланс",
-                    color = colorResource(id = R.color.color1),
-                    textAlign = TextAlign.Start,
-                    modifier = modifier
-                )
-                Text(
-                    text = "$balance рублей",
-                    color = colorResource(id = R.color.color1),
-                    textAlign = TextAlign.Start,
-                    fontSize = 24.sp,
-                    modifier = modifier
-                )
-                Text(
-                    text = debugMessage,
-                    color = colorResource(id = R.color.color1),
-                )
-            }
-            Spacer(modifier = modifier.size(48.dp))
-        }
-
-        Column (
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-                .width(200.dp)
-        ) {
-            Row (
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = modifier
-                    .fillMaxWidth()
-            ) {
-                Text(text = "Пополнить баланс")
-                Checkbox(
-                    checked = isAddingBalance,
-                    onCheckedChange = { isAddingBalance = !isAddingBalance })
-            }
-
-            TextField(
-                value = textState,
-                onValueChange = { textState = it; newBalance = it},
-                enabled = isAddingBalance,
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                placeholder = { Text(text = "макс. 300") }
-            )
-//            Button(
-//                onClick = { newBalance = textState; println(newBalance) },
-//                enabled = (textState != null)
-//            ) {
-//                Text(text = "Пополнить")
-//            }
-
-        }
-    }
-}
-
-
-//@Preview
-//@Composable
-//fun MainPagePreview() {
-//    MainPage()
-//}
-
-
-//@Preview
-//@Composable
-//fun MainBlockPreview() {
-//    MainBlock("main info", "secondary info")
-//}
-
-//@Composable
-//fun MyButton(modifier: Modifier = Modifier) {
-//    Button(onClick = { /*TODO*/ }) {
-//        Row(
-//            verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.SpaceBetween
-//        ) {
-//            Icon(
-//                painter = painterResource(id = R.drawable.statistics),
-//                contentDescription = "",
-//                modifier = modifier
-//                    .size(20.dp))
-//            Text(
-//                text = "top up balance",
-//                fontFamily = FontFamily(
-//                    Font(R.font.montserrat_regular)
-//                ),
-//                modifier = modifier
-//                    .width(100.dp)
-//            )
-//        }
-//
-//    }
-//}
-//
-//@Preview
-//@Composable
-//fun MyButtonPreview() {
-//    MyButton()
-//}

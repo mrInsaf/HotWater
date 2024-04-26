@@ -2,11 +2,7 @@ package com.example.mynfc.components
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -27,7 +23,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mynfc.R
-import com.example.mynfc.ui.theme.paddingStart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -40,15 +35,14 @@ fun TopUpBlock(
     var text by remember {
         mutableStateOf("")
     }
-    Column {
-        CustomBlock(title = "Введите новый баланс", spacerHeight = 0.dp, modifier = modifier) {
+        CustomBlockRow(title = "Введите новый баланс", spacerHeight = 0.dp, modifier = modifier) {
             TextField(
                 value = text,
                 onValueChange = {
                     text = it
-                    onValueChange(it) // Вызываем функцию обратного вызова при изменении значения
+                    onValueChange(it)
                 },
-                suffix = { Text ("¥", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium))) },
+                prefix = { Text ("¥", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium))) },
                 textStyle = TextStyle(
                     fontSize = 24.sp,
                     color = Color.Black,
@@ -59,18 +53,13 @@ fun TopUpBlock(
                     disabledTextColor = Color.Transparent,
                     containerColor = Color.White,
                     unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
+                    disabledIndicatorColor = Color.Transparent,
                 ),
-                modifier = modifier.fillMaxWidth()
+                modifier = modifier.fillMaxWidth(fraction = 0.3f)
             )
-        }
-        Row(horizontalArrangement = Arrangement.End, modifier = modifier.fillMaxWidth().padding(horizontal = paddingStart)) {
             MyButton(text = "Записать", onClick = onAddingBalanceChange)
         }
-
     }
-
-}
 
 @Preview
 @RequiresApi(Build.VERSION_CODES.Q)

@@ -26,7 +26,7 @@ fun MainBlock(
     buttonText: String? = null,
     onButtonClick: (() -> Unit)? = null
 )  {
-    CustomBlock(
+    CustomBlockColumn(
         title = secondaryInfo,
     ) {
         Row(
