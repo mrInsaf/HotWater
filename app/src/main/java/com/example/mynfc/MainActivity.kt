@@ -8,56 +8,30 @@ import android.content.IntentFilter.MalformedMimeTypeException
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.MifareClassic
-import android.os.Build.VERSION_CODES.Q
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mynfc.components.Header
 import com.example.mynfc.components.MyNavbar
+import com.example.mynfc.misc.getHexString
+import com.example.mynfc.misc.hexStringToByteArray
+import com.example.mynfc.network.getCard
+import com.example.mynfc.network.getCardKeys
 
 import com.example.mynfc.screens.CheckBalanceScreen
 import com.example.mynfc.screens.StartScreen
@@ -71,16 +45,12 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 import java.math.BigInteger
 import kotlin.coroutines.EmptyCoroutineContext
 
-const val service: Boolean = false
+const val service: Boolean = true
 
 var balance by mutableStateOf("")
 var name by mutableStateOf("")
@@ -216,6 +186,9 @@ class MainActivity : ComponentActivity() {
                         if (mfc != null && tag != null) {
                             println(getHexString(resultBytes, resultBytes.size))
                             mfc.writeBlock(bIndex, resultBytes)
+                            if (i == 0) {
+                                balance = (intBalance / 100).toString()
+                            }
                         }
                     } catch (e: Exception) {
                         println("Error writing block: $e")
@@ -236,16 +209,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-    }
-
-    private fun hexStringToByteArray(hex: String): ByteArray {
-        val byteArray = ByteArray(hex.length / 2)
-        for (i in hex.indices step 2) {
-            val byte = hex.substring(i, i + 2).toInt(16).toByte()
-            byteArray[i / 2] = byte
-        }
-        return byteArray
     }
 
     private suspend fun readData(tag: Tag?): Array<ByteArray?> = coroutineScope {
@@ -262,14 +225,15 @@ class MainActivity : ComponentActivity() {
         println("card id: ${ getHexString(cardId, cardId?.size ?: 0) }")
         println("sector count: $secCount")
 
-        val response: Deferred<Array<String>> = async {
+        val response: Deferred<Array<ByteArray>> = async {
             debugMessage += "\nПолучаю ключи"
-            get_keys(cardId)
+            getCardKeys(cardId)
         }
-        val keysArray = response.await()
+        val cardKeys = response.await()
 
-        val sector10Key = hexStringToByteArray(keysArray[0])
-        val sector12Key = hexStringToByteArray(keysArray[1])
+        val sector10Key = cardKeys[0]
+        val sector12Key = cardKeys[1]
+
         debugMessage += "\nПолучил ключи " +
                 "${ getHexString(sector10Key, sector10Key?.size ?: 0) }, " +
                 getHexString(sector12Key, sector12Key?.size ?: 0)
@@ -309,30 +273,6 @@ class MainActivity : ComponentActivity() {
         return@coroutineScope arrayOf(cardId, sector10Key, sector12Key)
     }
 
-    suspend fun get_keys(cardId: ByteArray?): Array<String> = coroutineScope {
-        val url = "http://188.120.254.122:8000/nfc/hello/"
-        val client = OkHttpClient()
-        val jsonBody = """
-                    {
-                        "cardId": "${getHexString(cardId, cardId?.size ?: 0)}"
-                    }
-                """.trimIndent()
-        val mediaType = "application/json; charset=utf-8".toMediaType()
-        val requestBody = jsonBody.toRequestBody(mediaType)
-        val request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
-        val response = client.newCall(request).execute()
-        val jsonResponse = response.body?.string() ?: ""
-        val jsonObject = JSONObject(jsonResponse)
-
-
-        val sector10Key = jsonObject.getString("sector_10_key")
-        val sector12Key = jsonObject.getString("sector_12_key")
-        return@coroutineScope arrayOf(sector10Key, sector12Key)
-    }
-
 
     fun intToBytes(value: Int): ByteArray {
         val result = ByteArray(4)
@@ -341,20 +281,6 @@ class MainActivity : ComponentActivity() {
         result[2] = (value shr 8).toByte()
         result[3] = value.toByte()
         return result
-    }
-
-    private fun getHexString(bytes: ByteArray?, length: Int): String {
-        val hexString = StringBuilder()
-        bytes?.let {
-            for (i in 0 until length) {
-                val hex = Integer.toHexString(0xFF and it[i].toInt())
-                if (hex.length == 1) {
-                    hexString.append('0')
-                }
-                hexString.append(hex)
-            }
-        }
-        return hexString.toString()
     }
 }
 
