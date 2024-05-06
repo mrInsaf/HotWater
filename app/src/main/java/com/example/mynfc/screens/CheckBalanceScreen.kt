@@ -1,7 +1,5 @@
 package com.example.mynfc.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,33 +21,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.example.mynfc.AppLayout
 import com.example.mynfc.R
-import com.example.mynfc.components.CustomBlockColumn
-import com.example.mynfc.components.Header
+import com.example.mynfc.components.CustomBlock
 import com.example.mynfc.components.MainBlock
-import com.example.mynfc.components.MyNavbar
 import com.example.mynfc.components.SecondaryBlock
 import com.example.mynfc.components.TopUpBlock
 import com.example.mynfc.topUpHistory
 
-@RequiresApi(Build.VERSION_CODES.Q)
+
 @Composable
 fun TopUpHistoryBlock(modifier: Modifier = Modifier) {
-    CustomBlockColumn(title = "История пополнений") {
+    CustomBlock(title = "История пополнений") {
         for (map in topUpHistory) {
             SecondaryBlock(mainInfo = map["value"], secondaryInfo = map["date"])
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.Q)
+
 @Composable
 fun TopUpHistoryGraphicBlock(modifier: Modifier = Modifier) {
-    CustomBlockColumn(title = "Статистика") {
+    CustomBlock(title = "Статистика") {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.Q)
+
 @Preview
 @Composable
 fun CheckBalanceScreenPreview() {
@@ -59,12 +56,12 @@ fun CheckBalanceScreenPreview() {
         serverBalance = "0",
         isAddingBalance = false,
         completeWriting = false,
+        service = true,
         onAddingBalanceChange = { ""}) {
 
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun CheckBalanceScreen(
     username: String,
@@ -72,79 +69,86 @@ fun CheckBalanceScreen(
     serverBalance: String,
     completeWriting: Boolean,
     isAddingBalance: Boolean,
+    service: Boolean,
     modifier: Modifier = Modifier,
     onAddingBalanceChange: () -> Unit,
     onNewBalanceChange: ((String) -> Unit) = {},
     onDismiss: () -> Unit,
 ) {
-    var topUpValue by remember { mutableStateOf("") }
+    AppLayout {
+        var topUpValue by remember { mutableStateOf("") }
 
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(color = Color.White)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Header()
-            MainBlock(mainInfo = username, secondaryInfo = "Имя")
-            MainBlock(
-                mainInfo = "¥ $cardBalance",
-                secondaryInfo = "Баланс на карте",
-                buttonText = "Перенести на сервер",
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(color = Color.White)
+                    .verticalScroll(rememberScrollState())
             ) {
-                println("yo")
-            }
-            MainBlock(
-                mainInfo = "¥ $serverBalance",
-                secondaryInfo = "Баланс на сервере",
-                buttonText = "Перенести на карту",
-            ) {
-                println("yo")
-            }
-//        TopUpHistoryBlock()
-            TopUpBlock(
-                isAddingBalance = isAddingBalance,
-                onValueChange = {onNewBalanceChange(it); topUpValue = it},
-                onAddingBalanceChange = onAddingBalanceChange
-
-
-            )
-            if (isAddingBalance) {
-                AlertDialog(
-                    onDismissRequest = onDismiss,
-                    title = { Text(text = "Приложите карту") },
-                    text = { Text("К записи $topUpValue ¥") },
-                    icon = {
-                        Icon(painter = painterResource(id = R.drawable.contactless), contentDescription = "Example Icon")
+                MainBlock(mainInfo = username, secondaryInfo = "Имя", service = service)
+                MainBlock(
+                    mainInfo = "¥ $cardBalance",
+                    secondaryInfo = "Баланс на карте",
+                    buttonText = "Перенести на сервер",
+                    onButtonClick = {
+                        println("yo")
                     },
-                    confirmButton = {
-                        Button(onDismiss) {
-                            Text("OK", fontSize = 22.sp)
-                        }
-                    }
+                    service = service,
+                    iconId = R.drawable.cloud_computing,
                 )
-            }
-
-            if (completeWriting) {
-                AlertDialog(
-                    onDismissRequest = onDismiss,
-                    title = { Text(text = "Баланс успешно записан") },
-                    text = { Text("На баланс записано $topUpValue ¥") },
-                    icon = {
-                        Icon(painter = painterResource(id = R.drawable.success), contentDescription = "Example Icon")
+                MainBlock(
+                    mainInfo = "¥ $serverBalance",
+                    secondaryInfo = "Баланс на сервере",
+                    buttonText = "Перенести на карту",
+                    onButtonClick = {
+                        println("yo")
                     },
-                    confirmButton = {
-                        Button(onDismiss) {
-                            Text("OK", fontSize = 22.sp)
-                        }
-                    }
+                    service = service,
+                    iconId = R.drawable.download,
                 )
-            }
+                TopUpBlock(
+                    isAddingBalance = isAddingBalance,
+                    onValueChange = {onNewBalanceChange(it); topUpValue = it},
+                    onAddingBalanceChange = onAddingBalanceChange,
+                    service = service,
+                    iconId = R.drawable.diskette
+                )
+                if (isAddingBalance) {
+                    AlertDialog(
+                        onDismissRequest = onDismiss,
+                        title = { Text(text = "Приложите карту") },
+                        text = { Text("К записи $topUpValue ¥") },
+                        icon = {
+                            Icon(painter = painterResource(id = R.drawable.contactless), contentDescription = "Example Icon")
+                        },
+                        confirmButton = {
+                            Button(onDismiss) {
+                                Text("Oк", fontSize = 22.sp)
+                            }
+                        }
+                    )
+                }
 
-            TopUpHistoryGraphicBlock()
+                if (completeWriting) {
+                    AlertDialog(
+                        onDismissRequest = onDismiss,
+                        title = { Text(text = "Баланс успешно записан") },
+                        text = { Text("На баланс записано $topUpValue ¥") },
+                        icon = {
+                            Icon(painter = painterResource(id = R.drawable.success), contentDescription = "Example Icon")
+                        },
+                        confirmButton = {
+                            Button(onDismiss) {
+                                Text("OK", fontSize = 22.sp)
+                            }
+                        }
+                    )
+                }
+
+                TopUpHistoryGraphicBlock()
+            }
         }
-        MyNavbar()
     }
+
 
 }

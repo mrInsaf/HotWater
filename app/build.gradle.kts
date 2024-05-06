@@ -3,13 +3,14 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+
 android {
     namespace = "com.example.mynfc"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.mynfc"
-        minSdk = 24
+        applicationId = "com.example.mynfc.service"
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -18,6 +19,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
     }
 
     buildTypes {

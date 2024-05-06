@@ -1,18 +1,13 @@
 package com.example.mynfc.components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,41 +25,8 @@ import com.example.mynfc.R
 import com.example.mynfc.ui.theme.paddingStart
 import com.example.mynfc.ui.theme.paddingTop
 
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun CustomBlockColumn(title: String = "title", modifier: Modifier = Modifier, spacerHeight: Dp = paddingTop, content: @Composable () -> Unit, ) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .advancedShadow(
-                color = Color.Black,
-                alpha = 0.05f,
-                cornersRadius = 16.dp,
-                shadowBlurRadius = 20.dp,
-                offsetY = 8.dp,
-            )
-            .background(
-                color = Color.White,
-                shape = RoundedCornerShape(24.dp)
-            )
-            .padding(horizontal = paddingStart, vertical = 12.dp)
-    ) {
-        Text(
-            text = title,
-            style = TextStyle(fontSize = 12.sp, color = Color.LightGray),
-            fontFamily = FontFamily(
-                Font(R.font.montserrat_regular)
-            )
-        )
-        content()
-    }
-    Spacer(modifier = modifier.size(spacerHeight))
-}
-
-@RequiresApi(Build.VERSION_CODES.Q)
-@Composable
-fun CustomBlockRow(title: String = "title", modifier: Modifier = Modifier, spacerHeight: Dp = paddingTop, content: @Composable () -> Unit, ) {
+fun CustomBlock(title: String = "title", modifier: Modifier = Modifier, spacerHeight: Dp = paddingTop, content: @Composable () -> Unit, ) {
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
@@ -101,8 +63,7 @@ fun CustomBlockRow(title: String = "title", modifier: Modifier = Modifier, space
 }
 
 @Preview
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun CustomBlockRowPreview() {
-    CustomBlockRow(title = "test", content = { Text(text = "text")})
+    CustomBlock(title = "test", content = { Text(text = "text")})
 }

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,6 +30,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -43,14 +45,22 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.mynfc.components.Header
+import com.example.mynfc.components.MyNavbar
 
 import com.example.mynfc.screens.CheckBalanceScreen
+import com.example.mynfc.screens.StartScreen
 
 import com.example.mynfc.ui.theme.MyNFCTheme
 import kotlinx.coroutines.CoroutineScope
@@ -70,6 +80,8 @@ import java.io.IOException
 import java.math.BigInteger
 import kotlin.coroutines.EmptyCoroutineContext
 
+const val service: Boolean = false
+
 var balance by mutableStateOf("")
 var name by mutableStateOf("")
 var isAddingBalance by  mutableStateOf(false)
@@ -87,7 +99,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var mPendingIntent: PendingIntent
     private lateinit var mFilters: Array<IntentFilter>
     private lateinit var mTechLists: Array<Array<String>>
-    @RequiresApi(Q)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         runBlocking() {
@@ -119,15 +131,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CheckBalanceScreen(
-                        username = name,
-                        cardBalance = balance,
-                        serverBalance = "0",
-                        completeWriting = completeWriting,
-                        isAddingBalance = isAddingBalance,
-                        onAddingBalanceChange = { isAddingBalance = true; println("is adding balance $isAddingBalance")},
-                        onNewBalanceChange = { newBalance = it; println("newbalance: $newBalance")},
-                        onDismiss = {isAddingBalance = false; completeWriting = false})
+                    App()
                 }
             }
         }
@@ -352,4 +356,54 @@ class MainActivity : ComponentActivity() {
         }
         return hexString.toString()
     }
+}
+
+sealed class Screen(val route: String) {
+    data object Start : Screen("start")
+    data object CheckBalance : Screen("check_balance")
+}
+
+@Composable
+fun App() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = Screen.CheckBalance.route) {
+        composable(Screen.Start.route) {
+            StartScreen()
+        }
+        composable(Screen.CheckBalance.route) {
+            CheckBalanceScreen(
+                username = name,
+                cardBalance = balance,
+                serverBalance = "0",
+                completeWriting = completeWriting,
+                isAddingBalance = isAddingBalance,
+                onAddingBalanceChange = { isAddingBalance = true; println("is adding balance $isAddingBalance")},
+                onNewBalanceChange = { newBalance = it; println("newbalance: $newBalance")},
+                service = service,
+                onDismiss = {isAddingBalance = false; completeWriting = false}
+            )
+        }
+    }
+}
+
+@Composable
+fun AppLayout(content: @Composable () -> Unit) {
+    Scaffold(
+        topBar = { Header() },
+        bottomBar = { MyNavbar() },
+        content = {
+            // Применение внутреннего отступа для содержимого
+            Surface(Modifier.padding(it), color = Color.White) {
+                content()
+            }
+        },
+        containerColor = Color.White
+    )
+}
+
+@Preview
+@Composable
+fun PreviewApp() {
+    App()
 }

@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Горячая Вода</string>
+<!--    <string name="app_name">Горячая вода</string>-->
+    <string name="app_name">Сервис</string>
 </resources>

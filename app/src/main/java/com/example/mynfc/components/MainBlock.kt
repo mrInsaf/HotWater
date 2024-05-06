@@ -17,16 +17,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.mynfc.R
 
-@RequiresApi(Build.VERSION_CODES.Q)
+
 @Composable
 fun MainBlock(
     mainInfo: String,
     secondaryInfo: String,
     modifier: Modifier = Modifier,
     buttonText: String? = null,
-    onButtonClick: (() -> Unit)? = null
+    onButtonClick: (() -> Unit)? = null,
+    iconId: Int? = null,
+    service: Boolean
 )  {
-    CustomBlockColumn(
+    CustomBlock(
         title = secondaryInfo,
     ) {
         Row(
@@ -41,12 +43,11 @@ fun MainBlock(
                 modifier = modifier
 //                    .weight(4f)
             )
-            if (buttonText != null && onButtonClick != null) {
-                MyButton(
+            if (service && buttonText != null && onButtonClick != null) {
+                ButtonWithIcon(
                     text = buttonText,
                     onClick = onButtonClick,
-                    modifier = modifier
-//                        .weight(1f)
+                    iconId = iconId
                 )
             }
         }
@@ -57,7 +58,7 @@ fun MainBlock(
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun MainBlockPreview() {
-    MainBlock("yoo", "yoo", buttonText = "yooщщщщ") {
+    MainBlock("yoo", "yoo", buttonText = "yooщщщщ", onButtonClick = {
         println("yo")
-    }
+    }, service = true)
 }
