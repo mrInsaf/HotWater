@@ -51,7 +51,7 @@ fun TopUpHistoryGraphicBlock(modifier: Modifier = Modifier) {
 @Composable
 fun CheckBalanceScreenPreview() {
     CheckBalanceScreen(
-        username = "Инсаф",
+        username = "IVANOV IVAN",
         cardBalance = "123",
         serverBalance = "0",
         isAddingBalance = false,

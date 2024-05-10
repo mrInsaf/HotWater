@@ -34,6 +34,5 @@ suspend fun getCardKeys(cardId: ByteArray?): Array<ByteArray> = coroutineScope {
     val jsonObject = getCard(cardId)
     val sector10Key = hexStringToByteArray(jsonObject.getString("sector_10_key"))
     val sector12Key = hexStringToByteArray(jsonObject.getString("sector_12_key"))
-
     return@coroutineScope arrayOf(sector10Key, sector12Key)
 }

@@ -48,7 +48,7 @@ fun MyTextField(
             text = it
             onValueChange(it)
         },
-        prefix = { Text ("¥", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium))) },
+//        prefix = { Text ("¥", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium))) },
         textStyle = TextStyle(
             fontSize = 24.sp,
             color = Color.Black,
@@ -84,6 +84,7 @@ fun TopUpBlock(
                     modifier = modifier.fillMaxWidth(),
 
                 ) {
+                    Text("¥", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium)))
                     MyTextField(onValueChange = onValueChange)
                     ButtonWithIcon(
                         text = "Записать",
@@ -94,7 +95,11 @@ fun TopUpBlock(
             }
             else {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    MyTextField(onValueChange = onValueChange)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text ("¥", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium)))
+                        MyTextField(onValueChange = onValueChange)
+                    }
+
                     Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                         Button(
                             onClick = { /*TODO*/ },
