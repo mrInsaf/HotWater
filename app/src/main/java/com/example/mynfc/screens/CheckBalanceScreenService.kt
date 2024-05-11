@@ -11,10 +11,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.mynfc.AppLayout
 import com.example.mynfc.R
 import com.example.mynfc.components.MainBlock
+import com.example.mynfc.components.ServerBalanceTransactionDialog
 import com.example.mynfc.components.TopUpBlockService
 
 @Composable
@@ -36,15 +33,20 @@ fun CheckBalanceScreenService(
     toServerValue: String,
     completeWriting: Boolean,
     isAddingBalance: Boolean,
+    isUpdatingServerBalance: Boolean,
+    isUpdatingCardBalance: Boolean,
     service: Boolean,
     modifier: Modifier = Modifier,
     onAddingBalanceChange: () -> Unit,
     onNewBalanceChange: ((String) -> Unit) = {},
     onToCardValueChange: ((String) -> Unit) = {},
     onToServerValueChange: ((String) -> Unit) = {},
-    onUpdateServerBalance: ((String) -> Unit),
-    onDismiss: () -> Unit,
-) {
+    onUpdateServerBalance: () -> Unit,
+    onUpdateServerBalanceBegin: () -> Unit,
+    onDismissAddingBalance: () -> Unit,
+    onDismissCompletedBalance: () -> Unit,
+    onDismissUpdatingServerBalance: () -> Unit,
+    ) {
     AppLayout {
 
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
@@ -60,7 +62,7 @@ fun CheckBalanceScreenService(
                     topUpValue = toServerValue,
                     buttonText = "На сервер",
                     placeholderValue = cardBalance,
-                    onAddingBalanceChange = onAddingBalanceChange,
+                    onClick = onUpdateServerBalanceBegin,
                     onValueChange = {onToServerValueChange(it)},
                     iconId = R.drawable.cloud_computing,
                 )
@@ -69,7 +71,7 @@ fun CheckBalanceScreenService(
                     topUpValue = toCardValue,
                     buttonText = "На карту",
                     placeholderValue = serverBalance,
-                    onAddingBalanceChange = onAddingBalanceChange,
+                    onClick = onAddingBalanceChange,
                     onValueChange = {onToCardValueChange(it)},
                     iconId = R.drawable.download,
                 )
@@ -77,40 +79,56 @@ fun CheckBalanceScreenService(
                     topUpValue = newBalance,
                     buttonText = "Записать",
                     placeholderValue = "",
-                    onAddingBalanceChange = onAddingBalanceChange,
+                    onClick = onAddingBalanceChange,
                     onValueChange = {onNewBalanceChange(it)},
                     iconId = R.drawable.diskette
                 )
                 if (isAddingBalance) {
                     AlertDialog(
-                        onDismissRequest = onDismiss,
+                        onDismissRequest = onDismissAddingBalance,
                         title = { Text(text = "Приложите карту") },
                         text = { Text("К записи $newBalance ¥") },
                         icon = {
                             Icon(painter = painterResource(id = R.drawable.contactless), contentDescription = "Example Icon")
                         },
                         confirmButton = {
-                            Button(onDismiss) {
+                            Button(onDismissAddingBalance) {
                                 Text("Oк", fontSize = 22.sp)
                             }
-                        }
+                        },
+                        containerColor = Color.White
                     )
                 }
 
                 if (completeWriting) {
                     AlertDialog(
-                        onDismissRequest = onDismiss,
+                        onDismissRequest = onDismissCompletedBalance,
                         title = { Text(text = "Баланс успешно записан") },
-                        text = { Text("На баланс записано $newBalance ¥") },
+                        text = { Text(
+                            text = if (!isUpdatingServerBalance) {
+                                "Баланс карты -> $cardBalance ¥"
+                            } else {
+                                "Баланс карты -> $cardBalance ¥\n" +
+                                "Баланс сервера -> $serverBalance ¥"
+                            }
+                        )},
                         icon = {
                             Icon(painter = painterResource(id = R.drawable.success), contentDescription = "Example Icon")
                         },
                         confirmButton = {
-                            Button(onDismiss) {
+                            Button(onDismissCompletedBalance) {
                                 Text("OK", fontSize = 22.sp)
                             }
                         }
                     )
+                }
+
+                if (isUpdatingServerBalance) {
+                    ServerBalanceTransactionDialog(
+                        newServerBalance = toServerValue,
+                        toServer = true,
+                        onDismissRequest = { onDismissUpdatingServerBalance() },
+                        onConfirmation = { onUpdateServerBalance() })
                 }
 
                 TopUpHistoryGraphicBlock()
@@ -128,6 +146,8 @@ fun CheckBalanceScreenServicePreview() {
         cardBalance = "123",
         serverBalance = "0",
         isAddingBalance = false,
+        isUpdatingServerBalance = false,
+        isUpdatingCardBalance = false,
         completeWriting = false,
         service = true,
         onAddingBalanceChange = { ""},
@@ -135,7 +155,10 @@ fun CheckBalanceScreenServicePreview() {
         onUpdateServerBalance = {},
         newBalance = "0",
         toServerValue = "0",
-        toCardValue = "0"
+        toCardValue = "0",
+        onDismissAddingBalance = {},
+        onDismissCompletedBalance = {},
+        onUpdateServerBalanceBegin = {}
     ) {
 
     }

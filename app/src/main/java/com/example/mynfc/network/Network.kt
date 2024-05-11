@@ -37,11 +37,14 @@ suspend fun getCard(cardId: ByteArray?): JSONObject = coroutineScope {
     return@coroutineScope jsonObject
 }
 
-suspend fun getCardKeys(cardId: ByteArray?): Array<ByteArray> = coroutineScope {
-    val jsonObject = getCard(cardId)
+suspend fun getCardKeys(jsonObject: JSONObject): Array<ByteArray> = coroutineScope {
     val sector10Key = hexStringToByteArray(jsonObject.getString("sector_10_key"))
     val sector12Key = hexStringToByteArray(jsonObject.getString("sector_12_key"))
     return@coroutineScope arrayOf(sector10Key, sector12Key)
+}
+
+suspend fun getServerBalance(jsonObject: JSONObject): String= coroutineScope {
+    return@coroutineScope jsonObject.getString("server_balance")
 }
 
 suspend fun updateServerBalanceNetwork(cardId: ByteArray?, newBalance: String) = coroutineScope {
@@ -53,6 +56,13 @@ suspend fun updateServerBalanceNetwork(cardId: ByteArray?, newBalance: String) =
                     }
                 """.trimIndent()
     val jsonObject = postQuery(route = url, jsonBody = jsonBody)
-    println(jsonObject)
-    return@coroutineScope jsonObject
+
+    if (jsonObject.has("error")) {
+        val errorMessage = jsonObject.getString("error")
+        println("Ошибка: $errorMessage")
+        return@coroutineScope "Что-то пошло не так"
+    } else {
+        val serverBalance = jsonObject.getString("new_server_balance")
+        return@coroutineScope serverBalance
+    }
 }

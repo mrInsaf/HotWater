@@ -9,8 +9,8 @@ android {
     compileSdk = 34
 
     defaultConfig {
-//        applicationId = "com.example.mynfc.service"
-        applicationId = "com.example.mynfc.user"
+        applicationId = "com.example.mynfc.service"
+//        applicationId = "com.example.mynfc.user"
         minSdk = 29
         targetSdk = 34
         versionCode = 1

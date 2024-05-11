@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.EmptyCoroutineContext
 
-const val service: Boolean = false
+const val service: Boolean = true
 
 val topUpHistory = listOf(
     mapOf("date" to "20.04.2024", "value" to "+50 ¥"),
@@ -129,7 +129,7 @@ class MainActivity : ComponentActivity() {
                     newBalance = uiState.value.newBalance,
                     onNewBalanceChange = { vodaViewModel.onNewBalanceChange(it) },
                     service = service,
-                    onDismiss = { vodaViewModel.onDismiss() },
+                    onDismiss = { vodaViewModel.onDismissAddingBalance() },
                     onUpdateServerBalance = {},
                 )
             }
@@ -148,8 +148,18 @@ class MainActivity : ComponentActivity() {
                     onToCardValueChange = { vodaViewModel.onToCardValueChange(it) },
                     onToServerValueChange = { vodaViewModel.onToServerValueChange(it) },
                     service = service,
-                    onDismiss = { vodaViewModel.onDismiss() },
-                    onUpdateServerBalance = {},
+                    onDismissAddingBalance = { vodaViewModel.onDismissAddingBalance() },
+                    onDismissCompletedBalance = { vodaViewModel.onDismissCompletedBalance() },
+                    onUpdateServerBalance = {
+                        val scope = CoroutineScope(EmptyCoroutineContext)
+                        val job = scope.launch {
+                            vodaViewModel.updateServerBalance()
+                        }
+                                            },
+                    isUpdatingServerBalance = uiState.value.isUpdatingServerBalance,
+                    isUpdatingCardBalance = uiState.value.isUpdatingCardBalance,
+                    onDismissUpdatingServerBalance = {vodaViewModel.onDismissUpdatingServerBalance()},
+                    onUpdateServerBalanceBegin = { vodaViewModel.onUpdateServerBalanceBegin() }
                 )
             }
         }

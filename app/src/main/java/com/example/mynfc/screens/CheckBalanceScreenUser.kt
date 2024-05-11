@@ -111,7 +111,7 @@ fun CheckBalanceScreenUserPreview() {
         username = "IVANOV IVAN",
         cardBalance = "123",
         serverBalance = "0",
-        isAddingBalance = false,
+        isAddingBalance = true,
         completeWriting = false,
         service = false,
         onNewBalanceChange = {println(it)},
