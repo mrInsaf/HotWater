@@ -9,14 +9,9 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
-suspend fun getCard(cardId: ByteArray?): JSONObject = coroutineScope {
-    val url = "http://188.120.254.122:8000/nfc/hello/"
+suspend fun postQuery(route: String, jsonBody: String) = coroutineScope {
+    val url = "http://188.120.254.122:8000/$route"
     val client = OkHttpClient()
-    val jsonBody = """
-                    {
-                        "cardId": "${getHexString(cardId, cardId?.size ?: 0)}"
-                    }
-                """.trimIndent()
     val mediaType = "application/json; charset=utf-8".toMediaType()
     val requestBody = jsonBody.toRequestBody(mediaType)
     val request = Request.Builder()
@@ -30,9 +25,34 @@ suspend fun getCard(cardId: ByteArray?): JSONObject = coroutineScope {
     return@coroutineScope jsonObject
 }
 
+suspend fun getCard(cardId: ByteArray?): JSONObject = coroutineScope {
+    val url = "nfc/hello/"
+    val jsonBody = """
+                    {
+                        "cardId": "${getHexString(cardId, cardId?.size ?: 0)}"
+                    }
+                """.trimIndent()
+    val jsonObject = postQuery(route = url, jsonBody = jsonBody)
+    println(jsonObject)
+    return@coroutineScope jsonObject
+}
+
 suspend fun getCardKeys(cardId: ByteArray?): Array<ByteArray> = coroutineScope {
     val jsonObject = getCard(cardId)
     val sector10Key = hexStringToByteArray(jsonObject.getString("sector_10_key"))
     val sector12Key = hexStringToByteArray(jsonObject.getString("sector_12_key"))
     return@coroutineScope arrayOf(sector10Key, sector12Key)
+}
+
+suspend fun updateServerBalanceNetwork(cardId: ByteArray?, newBalance: String) = coroutineScope {
+    val url = "nfc/update-server-balance/"
+    val jsonBody = """
+                    {
+                        "cardId": "${getHexString(cardId, cardId?.size ?: 0)}",
+                        "newBalance": "$newBalance"
+                    }
+                """.trimIndent()
+    val jsonObject = postQuery(route = url, jsonBody = jsonBody)
+    println(jsonObject)
+    return@coroutineScope jsonObject
 }

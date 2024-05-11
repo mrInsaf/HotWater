@@ -26,7 +26,8 @@ import com.example.mynfc.R
 import com.example.mynfc.components.CustomBlock
 import com.example.mynfc.components.MainBlock
 import com.example.mynfc.components.SecondaryBlock
-import com.example.mynfc.components.TopUpBlock
+import com.example.mynfc.components.TopUpBlockService
+import com.example.mynfc.components.TopUpBlockUser
 import com.example.mynfc.topUpHistory
 
 
@@ -46,38 +47,21 @@ fun TopUpHistoryGraphicBlock(modifier: Modifier = Modifier) {
     }
 }
 
-
-@Preview
 @Composable
-fun CheckBalanceScreenPreview() {
-    CheckBalanceScreen(
-        username = "IVANOV IVAN",
-        cardBalance = "123",
-        serverBalance = "0",
-        isAddingBalance = false,
-        completeWriting = false,
-        service = true,
-        onAddingBalanceChange = { ""}) {
-
-    }
-}
-
-@Composable
-fun CheckBalanceScreen(
+fun CheckBalanceScreenUser(
     username: String,
     cardBalance: String,
     serverBalance: String,
+    newBalance: String,
     completeWriting: Boolean,
     isAddingBalance: Boolean,
     service: Boolean,
     modifier: Modifier = Modifier,
-    onAddingBalanceChange: () -> Unit,
     onNewBalanceChange: ((String) -> Unit) = {},
+    onUpdateServerBalance: ((String) -> Unit),
     onDismiss: () -> Unit,
 ) {
     AppLayout {
-        var topUpValue by remember { mutableStateOf("") }
-
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
             Column(
                 modifier = modifier
@@ -87,17 +71,17 @@ fun CheckBalanceScreen(
             ) {
                 MainBlock(mainInfo = username, secondaryInfo = "Имя", service = service)
                 MainBlock(
-                    mainInfo = "¥ $cardBalance",
+                    mainInfo = "¥   $cardBalance",
                     secondaryInfo = "Баланс на карте",
                     buttonText = "Перенести на сервер",
                     onButtonClick = {
-                        println("yo")
+//                        onUpdateServerBalance()
                     },
                     service = service,
                     iconId = R.drawable.cloud_computing,
                 )
                 MainBlock(
-                    mainInfo = "¥ $serverBalance",
+                    mainInfo = "¥   $serverBalance",
                     secondaryInfo = "Баланс на сервере",
                     buttonText = "Перенести на карту",
                     onButtonClick = {
@@ -106,44 +90,11 @@ fun CheckBalanceScreen(
                     service = service,
                     iconId = R.drawable.download,
                 )
-                TopUpBlock(
-                    isAddingBalance = isAddingBalance,
-                    onValueChange = {onNewBalanceChange(it); topUpValue = it},
-                    onAddingBalanceChange = onAddingBalanceChange,
-                    service = service,
-                    iconId = R.drawable.diskette
+                TopUpBlockUser(
+                    title = "Введите баланс",
+                    onValueChange = {onNewBalanceChange(it)},
+                    topUpValue = newBalance,
                 )
-                if (isAddingBalance) {
-                    AlertDialog(
-                        onDismissRequest = onDismiss,
-                        title = { Text(text = "Приложите карту") },
-                        text = { Text("К записи $topUpValue ¥") },
-                        icon = {
-                            Icon(painter = painterResource(id = R.drawable.contactless), contentDescription = "Example Icon")
-                        },
-                        confirmButton = {
-                            Button(onDismiss) {
-                                Text("Oк", fontSize = 22.sp)
-                            }
-                        }
-                    )
-                }
-
-                if (completeWriting) {
-                    AlertDialog(
-                        onDismissRequest = onDismiss,
-                        title = { Text(text = "Баланс успешно записан") },
-                        text = { Text("На баланс записано $topUpValue ¥") },
-                        icon = {
-                            Icon(painter = painterResource(id = R.drawable.success), contentDescription = "Example Icon")
-                        },
-                        confirmButton = {
-                            Button(onDismiss) {
-                                Text("OK", fontSize = 22.sp)
-                            }
-                        }
-                    )
-                }
 
                 TopUpHistoryGraphicBlock()
             }
@@ -151,4 +102,22 @@ fun CheckBalanceScreen(
     }
 
 
+}
+
+@Preview
+@Composable
+fun CheckBalanceScreenUserPreview() {
+    CheckBalanceScreenUser(
+        username = "IVANOV IVAN",
+        cardBalance = "123",
+        serverBalance = "0",
+        isAddingBalance = false,
+        completeWriting = false,
+        service = false,
+        onNewBalanceChange = {println(it)},
+        onUpdateServerBalance = {},
+        newBalance = "0"
+    ) {
+
+    }
 }
