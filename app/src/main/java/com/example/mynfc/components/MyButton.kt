@@ -44,13 +44,15 @@ fun MyButton(
 
 @Composable
 fun ButtonWithIcon(
+    enabled: Boolean,
     text: String,
     modifier: Modifier = Modifier,
-    minWidth: Dp = 148.dp,
+    minWidth: Dp = 128.dp,
     iconId: Int? = null,
     onClick: () -> Unit,
 ) {
     Button(
+        enabled = enabled,
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xff9CA8FF))
     ) {

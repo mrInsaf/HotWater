@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mynfc.R
@@ -24,22 +25,28 @@ fun TopUpBlockUser(
     title: String,
     onValueChange: (String) -> Unit,
     topUpValue: String,
-    modifier: Modifier = Modifier
+    unacceptableInput: Boolean,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    onUpdatingServerBalanceChange: () -> Unit,
+    onUpdatingCardBalanceChange: () -> Unit,
 ) {
     CustomBlock(title = title, modifier = modifier) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text ("¥ ", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium)))
                 MyTextField(
+                    enabled = enabled,
                     onValueChange = onValueChange,
                     topUpValue = topUpValue,
-                    placeholderValue = ""
+                    placeholderValue = "",
+                    unacceptableInput = unacceptableInput,
                 )
             }
 
             Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = onUpdatingCardBalanceChange,
                     modifier = modifier
                         .weight(1f)
                 ) {
@@ -57,7 +64,7 @@ fun TopUpBlockUser(
                 }
                 Spacer(modifier = Modifier.size(8.dp))
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = onUpdatingServerBalanceChange,
                     modifier = modifier
                         .weight(1f)
                 ) {
@@ -77,5 +84,18 @@ fun TopUpBlockUser(
             }
         }
     }
+}
 
+@Preview
+@Composable
+fun TopUpBlockUserPreview() {
+    TopUpBlockUser(
+        title = "yo",
+        onValueChange = {},
+        topUpValue = "123",
+        enabled = true,
+        unacceptableInput = false,
+        onUpdatingServerBalanceChange = {},
+        onUpdatingCardBalanceChange = {}
+    )
 }

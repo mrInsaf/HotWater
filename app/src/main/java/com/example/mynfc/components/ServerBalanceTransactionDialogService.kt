@@ -1,9 +1,7 @@
 package com.example.mynfc.components
 
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,20 +11,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.mynfc.R
 
 @Composable
-fun ServerBalanceTransactionDialog(
-    newServerBalance: String,
-    toServer: Boolean,
+fun MyDialog(
+    text: String,
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
-    modifier: Modifier = Modifier
+    iconId: Int,
 ) {
     AlertDialog(
         icon = {
-            Icon(painter = painterResource(id = R.drawable.cloud_computing), contentDescription = "Example Icon")
+            Icon(painter = painterResource(id = iconId), contentDescription = "Example Icon")
         },
         title = {
             MyText(
-                text = "Записать $newServerBalance ¥ на сервер?",
+                text = text,
                 fontSize = 20,
                 fontFamily = R.font.montserrat_regular
             )
@@ -44,7 +41,7 @@ fun ServerBalanceTransactionDialog(
                     text = "Подтвердить",
                     fontSize = 14,
                     color = Color(0xff9CA8FF)
-                    )
+                )
             }
         },
         dismissButton = {
@@ -64,13 +61,47 @@ fun ServerBalanceTransactionDialog(
     )
 }
 
+@Composable
+fun ServerBalanceTransactionDialogService(
+    newServerBalance: String,
+    newCardBalance: String,
+    toServer: Boolean,
+    toCard: Boolean,
+    onToServerDismiss: () -> Unit,
+    onToServerConfirmation: () -> Unit,
+    onToCardDismiss: () -> Unit,
+    onToCardConfirmation: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (toServer) {
+        MyDialog(
+            text = "Записать $newServerBalance ¥ на сервер?",
+            iconId = R.drawable.cloud_computing,
+            onConfirmation = onToServerConfirmation,
+            onDismissRequest = onToServerDismiss
+        )
+    }
+    if(toCard) {
+        MyDialog(
+            text = "Списать $newCardBalance ¥ с сервера?",
+            iconId = R.drawable.download,
+            onConfirmation = onToCardConfirmation,
+            onDismissRequest = onToCardDismiss
+        )
+    }
+}
+
 @Preview
 @Composable
 fun ServerBalanceTransactionDialogPreview() {
-    ServerBalanceTransactionDialog(
+    ServerBalanceTransactionDialogService(
         newServerBalance = "12",
-        onConfirmation = {},
-        onDismissRequest = {},
+        newCardBalance = "13",
+        onToServerDismiss = {},
+        onToServerConfirmation = {},
+        onToCardDismiss = {},
+        onToCardConfirmation = {},
         toServer = true,
+        toCard = false
     )
 }

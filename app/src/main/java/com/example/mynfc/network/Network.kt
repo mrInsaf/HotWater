@@ -48,7 +48,9 @@ suspend fun getServerBalance(jsonObject: JSONObject): String= coroutineScope {
 }
 
 suspend fun updateServerBalanceNetwork(cardId: ByteArray?, newBalance: String) = coroutineScope {
+    println("started updating server balance")
     val url = "nfc/update-server-balance/"
+    println("newbalance on network: $newBalance")
     val jsonBody = """
                     {
                         "cardId": "${getHexString(cardId, cardId?.size ?: 0)}",

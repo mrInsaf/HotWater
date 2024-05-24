@@ -24,6 +24,8 @@ import com.example.mynfc.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTextField(
+    enabled: Boolean,
+    unacceptableInput: Boolean,
     onValueChange: (String) -> Unit,
     topUpValue: String,
     placeholderValue: String,
@@ -43,6 +45,8 @@ fun MyTextField(
 //    )
 
     TextField(
+        enabled = enabled,
+        isError = unacceptableInput,
         value = topUpValue,
         onValueChange = { onValueChange(it) },
 //        prefix = { Text ("¥", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium))) },
@@ -55,16 +59,21 @@ fun MyTextField(
         colors = TextFieldDefaults.textFieldColors(
             disabledTextColor = Color.Transparent,
             containerColor = Color.White,
+            errorContainerColor = Color.White,
             unfocusedIndicatorColor = Color.Transparent,
+            errorLeadingIconColor = Color.Red,
             disabledIndicatorColor = Color.Transparent,
+            errorIndicatorColor = Color.Red  // Цвет индикатора ошибки
         ),
         placeholder = { Text(placeholderValue, fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium))) },
-        modifier = modifier.fillMaxWidth(fraction = 0.3f)
+        modifier = modifier.fillMaxWidth(fraction = 0.5f)
     )
 }
 
 @Composable
 fun TopUpBlockService(
+    enabled: Boolean,
+    unacceptableInput: Boolean,
     title: String = "Введите баланс",
     buttonText: String,
     topUpValue: String,
@@ -88,12 +97,15 @@ fun TopUpBlockService(
                 ) {
                     Text("¥", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium)))
                     MyTextField(
+                        enabled = enabled,
+                        unacceptableInput = unacceptableInput,
                         onValueChange = onValueChange,
                         topUpValue = topUpValue,
                         placeholderValue = placeholderValue,
                         )
                 }
                 ButtonWithIcon(
+                    enabled = enabled,
                     text = buttonText,
                     onClick = onClick,
                     iconId = iconId,
@@ -113,6 +125,8 @@ fun TopUpBlockPreview(modifier: Modifier = Modifier) {
         onClick = { println("yi")},
         buttonText = "Записать",
         topUpValue = topUpValue,
-        placeholderValue = ""
+        placeholderValue = "",
+        enabled = true,
+        unacceptableInput = true,
     )
 }

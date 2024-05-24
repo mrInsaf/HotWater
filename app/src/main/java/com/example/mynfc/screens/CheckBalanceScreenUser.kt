@@ -11,24 +11,24 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mynfc.AppLayout
 import com.example.mynfc.R
 import com.example.mynfc.components.CustomBlock
 import com.example.mynfc.components.MainBlock
+import com.example.mynfc.components.MyText
 import com.example.mynfc.components.SecondaryBlock
-import com.example.mynfc.components.TopUpBlockService
+import com.example.mynfc.components.ServerBalanceTransactionDialogUser
 import com.example.mynfc.components.TopUpBlockUser
 import com.example.mynfc.topUpHistory
+import com.example.mynfc.ui.voda.VodaViewModel
 
 
 @Composable
@@ -49,6 +49,7 @@ fun TopUpHistoryGraphicBlock(modifier: Modifier = Modifier) {
 
 @Composable
 fun CheckBalanceScreenUser(
+    vodaViewModel: VodaViewModel = viewModel(),
     username: String,
     cardBalance: String,
     serverBalance: String,
@@ -62,6 +63,7 @@ fun CheckBalanceScreenUser(
     onDismiss: () -> Unit,
 ) {
     AppLayout {
+        val uiState = vodaViewModel.uiState.collectAsState()
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
             Column(
                 modifier = modifier
@@ -94,7 +96,78 @@ fun CheckBalanceScreenUser(
                     title = "Введите баланс",
                     onValueChange = {onNewBalanceChange(it)},
                     topUpValue = newBalance,
+                    enabled = uiState.value.userInputEnabled,
+                    unacceptableInput = uiState.value.unacceptableUserInput,
+                    onUpdatingServerBalanceChange = { vodaViewModel.onUpdateServerBalanceBeginUser() },
+                    onUpdatingCardBalanceChange = {vodaViewModel.onUpdateCardBalanceBeginUser() }
                 )
+
+                if (isAddingBalance) {
+                    AlertDialog(
+                        onDismissRequest = { vodaViewModel.onDismissAddingBalance() },
+                        title = { Text(text = "Приложите карту") },
+                        text = { Text("К записи $newBalance ¥") },
+                        icon = {
+                            Icon(painter = painterResource(id = R.drawable.contactless), contentDescription = "Example Icon")
+                        },
+                        confirmButton = {
+                            Button({ vodaViewModel.onDismissAddingBalance() }) {
+                                Text("Отмена", fontSize = 22.sp)
+                            }
+                        },
+                        containerColor = Color.White
+                    )
+                }
+
+                if (completeWriting) {
+                    AlertDialog(
+                        onDismissRequest = { vodaViewModel.onDismissCompletedBalance() },
+                        title = { Text(text = "Баланс успешно записан") },
+                        text = { Text(
+                                "Баланс карты -> $cardBalance ¥\n" +
+                                        "Баланс сервера -> $serverBalance ¥"
+                        )
+                        },
+                        icon = {
+                            Icon(painter = painterResource(id = R.drawable.success), contentDescription = "Example Icon")
+                        },
+                        confirmButton = {
+                            Button({ vodaViewModel.onDismissCompletedBalance() }) {
+                                Text("OK", fontSize = 22.sp)
+                            }
+                        }
+                    )
+                }
+
+                ServerBalanceTransactionDialogUser(
+                    newServerBalance = uiState.value.toServerValue,
+                    newCardBalance = uiState.value.toCardValue,
+                    toServer = uiState.value.isUpdatingServerBalance,
+                    toCard = uiState.value.isUpdatingCardBalance,
+                    onToCardDismiss = { vodaViewModel.onDismissUpdatingCardBalance()},
+                    onToCardConfirmation = { vodaViewModel.updateCardBalanceUser()},
+                    onToServerDismiss = { vodaViewModel.onDismissUpdatingServerBalance()},
+                    onToServerConfirmation = { vodaViewModel.updateServerBalanceUser()},
+                )
+
+                if (uiState.value.errorOnWriting) {
+                    AlertDialog(
+                        onDismissRequest = { vodaViewModel.onDismissError() },
+                        title = { Text(text = "Ошибка при записи баланса") },
+                        text = { Text(
+                            "Попробуйте еще раз"
+                            )
+                        },
+                        icon = {
+                            Icon(painter = painterResource(id = R.drawable.warning), contentDescription = "Example Icon")
+                        },
+                        confirmButton = {
+                            Button({ vodaViewModel.onDismissCompletedBalance() }) {
+                                Text("OK", fontSize = 22.sp)
+                            }
+                        }
+                    )
+                }
 
                 TopUpHistoryGraphicBlock()
             }
@@ -111,7 +184,7 @@ fun CheckBalanceScreenUserPreview() {
         username = "IVANOV IVAN",
         cardBalance = "123",
         serverBalance = "0",
-        isAddingBalance = true,
+        isAddingBalance = false,
         completeWriting = false,
         service = false,
         onNewBalanceChange = {println(it)},

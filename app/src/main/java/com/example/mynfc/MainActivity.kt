@@ -30,13 +30,12 @@ import com.example.mynfc.screens.CheckBalanceScreenUser
 import com.example.mynfc.screens.StartScreen
 
 import com.example.mynfc.ui.theme.MyNFCTheme
-import com.example.mynfc.ui.theme.VodaViewModel
+import com.example.mynfc.ui.voda.VodaViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.EmptyCoroutineContext
 
-const val service: Boolean = true
 
 val topUpHistory = listOf(
     mapOf("date" to "20.04.2024", "value" to "+50 ¥"),
@@ -113,7 +112,7 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
 
         val uiState = vodaViewModel.uiState.collectAsState()
-        val checkBalanceScreen =  if(service) Screen.CheckBalanceService.route else Screen.CheckBalanceUser.route
+        val checkBalanceScreen =  if(uiState.value.service) Screen.CheckBalanceService.route else Screen.CheckBalanceUser.route
 
         NavHost(navController = navController, startDestination = checkBalanceScreen) {
             composable(Screen.Start.route) {
@@ -121,45 +120,48 @@ class MainActivity : ComponentActivity() {
             }
             composable(Screen.CheckBalanceUser.route) {
                 CheckBalanceScreenUser(
+                    vodaViewModel = vodaViewModel,
                     username = uiState.value.name,
                     cardBalance = uiState.value.balance,
                     serverBalance = uiState.value.serverBalance,
                     completeWriting = uiState.value.completeWriting,
-                    isAddingBalance = uiState.value.isAddingBalance,
+                    isAddingBalance = uiState.value.isUpdatingBalance,
                     newBalance = uiState.value.newBalance,
                     onNewBalanceChange = { vodaViewModel.onNewBalanceChange(it) },
-                    service = service,
+                    service = uiState.value.service,
                     onDismiss = { vodaViewModel.onDismissAddingBalance() },
                     onUpdateServerBalance = {},
                 )
             }
             composable(Screen.CheckBalanceService.route) {
                 CheckBalanceScreenService(
+                    vodaViewModel = vodaViewModel,
                     username = uiState.value.name,
                     cardBalance = uiState.value.balance,
                     serverBalance = uiState.value.serverBalance,
                     completeWriting = uiState.value.completeWriting,
-                    isAddingBalance = uiState.value.isAddingBalance,
+                    isAddingBalance = uiState.value.isUpdatingBalance,
                     newBalance = uiState.value.newBalance,
                     toCardValue = uiState.value.toCardValue,
                     toServerValue = uiState.value.toServerValue,
-                    onAddingBalanceChange = { vodaViewModel.onAddingBalanceChange() },
+                    onAddingBalanceChange = { vodaViewModel.onUpdatingBalanceChange() },
                     onNewBalanceChange = { vodaViewModel.onNewBalanceChange(it) },
-                    onToCardValueChange = { vodaViewModel.onToCardValueChange(it) },
                     onToServerValueChange = { vodaViewModel.onToServerValueChange(it) },
-                    service = service,
+                    service = uiState.value.service,
                     onDismissAddingBalance = { vodaViewModel.onDismissAddingBalance() },
                     onDismissCompletedBalance = { vodaViewModel.onDismissCompletedBalance() },
                     onUpdateServerBalance = {
                         val scope = CoroutineScope(EmptyCoroutineContext)
-                        val job = scope.launch {
+                        scope.launch {
                             vodaViewModel.updateServerBalance()
                         }
-                                            },
+                    },
                     isUpdatingServerBalance = uiState.value.isUpdatingServerBalance,
                     isUpdatingCardBalance = uiState.value.isUpdatingCardBalance,
                     onDismissUpdatingServerBalance = {vodaViewModel.onDismissUpdatingServerBalance()},
-                    onUpdateServerBalanceBegin = { vodaViewModel.onUpdateServerBalanceBegin() }
+                    onUpdateServerBalanceBegin = { vodaViewModel.onUpdateServerBalanceBegin() },
+                    onDismissUpdatingCardBalance = { vodaViewModel.onDismissUpdatingCardBalance() },
+                    onUpdateCardBalance = { vodaViewModel.updateCardBalance() },
                 )
             }
         }

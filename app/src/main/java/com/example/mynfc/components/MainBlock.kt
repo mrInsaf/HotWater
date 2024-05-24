@@ -43,13 +43,13 @@ fun MainBlock(
                 modifier = modifier
 //                    .weight(4f)
             )
-            if (service && buttonText != null && onButtonClick != null) {
-                ButtonWithIcon(
-                    text = buttonText,
-                    onClick = onButtonClick,
-                    iconId = iconId
-                )
-            }
+//            if (service && buttonText != null && onButtonClick != null) {
+//                ButtonWithIcon(
+//                    text = buttonText,
+//                    onClick = onButtonClick,
+//                    iconId = iconId
+//                )
+//            }
         }
     }
 }
