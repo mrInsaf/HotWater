@@ -30,6 +30,11 @@ data class VodaUiState (
 
     var userInputEnabled: Boolean = false,
 
+    var transactionValue: String = "",
+    var transactionId: String = "",
+
+    var transactionList: List<List<String>> = listOf(listOf("")),
+
     var errorOnWriting: Boolean = false,
 )
 

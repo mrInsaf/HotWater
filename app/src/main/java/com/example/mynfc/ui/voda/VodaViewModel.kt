@@ -13,10 +13,13 @@ import androidx.lifecycle.ViewModel
 import com.example.mynfc.misc.calculateFloatBalance
 import com.example.mynfc.misc.calculateResultBytes
 import com.example.mynfc.misc.getHexString
+import com.example.mynfc.network.confirmTransaction
+import com.example.mynfc.network.createTransactionService
 import com.example.mynfc.network.getCard
 import com.example.mynfc.network.getCardKeys
 import com.example.mynfc.network.getServerBalance
-import com.example.mynfc.network.updateServerBalanceNetwork
+import com.example.mynfc.network.updateServerBalanceNetworkService
+import com.example.mynfc.network.updateServerBalanceNetworkUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -28,6 +31,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.internal.closeQuietly
 import org.json.JSONObject
+import java.io.IOException
 import java.math.BigInteger
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -44,18 +48,24 @@ class VodaViewModel : ViewModel() {
             if (_uiState.value.isUpdatingBalance) {
                 try {
                     writeBalance(tagFromIntent)
+                    val newServerBalance = confirmTransaction(transactionId = uiState.value.transactionId, confirm = true)
                     _uiState.update { currentState ->
                         currentState.copy(
                             completeWriting = true,
                             newBalance = "",
                             unacceptableUserInput = false,
+                            serverBalance = newServerBalance,
                         )
                     }
                 }
                 catch (e: Exception) {
                     _uiState.update {currentState ->
                         currentState.copy(
-
+                            errorOnWriting = true,
+                            isUpdatingBalance = false,
+                            isUpdatingServerBalance = false,
+                            isUpdatingCardBalance = false,
+                            transactionId = "",
                         )
                     }
                 }
@@ -79,6 +89,7 @@ class VodaViewModel : ViewModel() {
 
         val sector12Key = readArray[2]
         val cardId = readArray[0]
+        println("cardId on write: $cardId")
 
         for (i in 0..1) {
             val bIndex = mfc.sectorToBlock(12) + i
@@ -99,28 +110,57 @@ class VodaViewModel : ViewModel() {
 
                 if (i == 0) {
                     val updatedBalance = (floatBalance / 100).toString()
+                    val transactionValue = uiState.value.transactionValue
+                    val toServerValue = uiState.value.toServerValue
+                    println("uistate: " +
+                            "${uiState.value.isUpdatingServerBalance}" +
+                            "${uiState.value.isUpdatingCardBalance}" +
+                            "${uiState.value.isUpdatingBalance}")
+
                     if (uiState.value.isUpdatingServerBalance || uiState.value.isUpdatingCardBalance) {
                         println("Just about to update server balance")
-                        val updatedServerBalance = updateServerBalanceNetwork(
+                        val serverResponse = updateServerBalanceNetworkUser(
                             cardId = cardId,
-                            newBalance = uiState.value.toServerValue
-                        )
-                        println("updatedServerBalance: $updatedServerBalance, uiState.value.serverBalance: ${uiState.value.serverBalance}")
-                        if (updatedServerBalance == uiState.value.serverBalance) {
-                            println("Баланс на сервере не изменился")
-                            throw Exception("Баланс на сервере не изменился")
-                        }
-                        mfc.writeBlock(bIndex, resultBytes)
-                        _uiState.update { it.copy(serverBalance = updatedServerBalance) }
+                            transactionValue = transactionValue,
+                            newBalance = toServerValue,
+                            )
+                        val transactionId = serverResponse[0]
+                        println("transactionId: $transactionId")
+                        _uiState.update { it.copy(transactionId = transactionId) }
+                    }
+                    else if (uiState.value.isUpdatingBalance) {
+                        val transactionId = createTransactionService(cardId = cardId, value = transactionValue)
+                        _uiState.update { it.copy(transactionId = transactionId) }
                     }
                     println("new balance: $updatedBalance")
-                    _uiState.update { it.copy(balance = updatedBalance, isUpdatingBalance = false) }
+                    _uiState.update { it.copy(
+                        balance = updatedBalance,
+                        isUpdatingBalance = false,
+                        ) }
+                }
+                try {
+                    mfc.writeBlock(bIndex, resultBytes)
+                }
+                catch (e: Exception) {
+                    println("Yebani oshibka: $e")
                 }
             } catch (e: Exception) {
                 println("Error during writing balance: $e")
                 debugMessage += "\n $e"
-            } finally {
-                mfc?.closeQuietly()
+                if (uiState.value.transactionId != "") {
+                    confirmTransaction(transactionId = uiState.value.transactionId, confirm = false)
+                }
+                throw e
+            }
+            finally {
+                try {
+                    mfc?.close()
+                } catch (e: IOException) {
+                    println("Error closing tag: $e")
+                    if (uiState.value.transactionId != "") {
+                        confirmTransaction(transactionId = uiState.value.transactionId, confirm = false)
+                    }
+                }
             }
         }
     }
@@ -311,8 +351,12 @@ class VodaViewModel : ViewModel() {
         val userInput = uiState.value.newBalance.toFloat()
         val serverBalance = uiState.value.serverBalance.toFloat()
         val cardBalance = uiState.value.balance.toFloat()
+
+        val transactionValue = -userInput
         val newServerBalance = serverBalance + userInput
         val newCardBalance = cardBalance - userInput
+
+        println("transactionValue: $transactionValue")
 
         if (userInput > cardBalance) {
             _uiState.update { currentState ->
@@ -326,7 +370,8 @@ class VodaViewModel : ViewModel() {
                     isUpdatingServerBalance = true,
                     toCardValue = newCardBalance.toString(),
                     toServerValue = newServerBalance.toString(),
-                    newBalance = newCardBalance.toString()
+                    newBalance = newCardBalance.toString(),
+                    transactionValue = transactionValue.toString()
                 )
             }
 
@@ -336,8 +381,11 @@ class VodaViewModel : ViewModel() {
         val userInput = uiState.value.newBalance.toFloat()
         val cardBalance = uiState.value.balance.toFloat()
         val serverBalance = uiState.value.serverBalance.toFloat()
+
+        val transactionValue = userInput
         val newServerBalance = serverBalance - userInput
         val newCardBalance = cardBalance + userInput
+        println("transactionValue: $transactionValue")
 
         if (userInput > serverBalance) {
             _uiState.update { currentState ->
@@ -351,7 +399,8 @@ class VodaViewModel : ViewModel() {
                     isUpdatingCardBalance = true,
                     toCardValue = newCardBalance.toString(),
                     toServerValue = newServerBalance.toString(),
-                    newBalance = newCardBalance.toString()
+                    newBalance = newCardBalance.toString(),
+                    transactionValue = transactionValue.toString(),
                 )
             }
 
@@ -396,9 +445,9 @@ class VodaViewModel : ViewModel() {
             }
         } else {
             val scope = CoroutineScope(EmptyCoroutineContext)
-            val job = scope.launch {
+            scope.launch {
                 val response: Deferred<String> = async {
-                    updateServerBalanceNetwork(
+                    updateServerBalanceNetworkService(
                         cardId = uiState.value.cardId,
                         newBalance = uiState.value.toServerValue
                     )

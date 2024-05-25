@@ -49,14 +49,6 @@ fun intToBytes(value: Int): ByteArray {
     return result
 }
 
-fun MifareClassic?.closeQuietly() {
-    try {
-        this?.close()
-    } catch (e: IOException) {
-        println("Error closing tag: $e")
-    }
-}
-
 fun calculateFloatBalance(uiState: StateFlow<VodaUiState>): Float {
     val floatBalance = when {
         uiState.value.isUpdatingServerBalance -> {
