@@ -19,6 +19,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.mynfc.AppLayout
 import com.example.mynfc.R
 import com.example.mynfc.components.CustomBlock
@@ -29,16 +31,6 @@ import com.example.mynfc.components.ServerBalanceTransactionDialogUser
 import com.example.mynfc.components.TopUpBlockUser
 import com.example.mynfc.topUpHistory
 import com.example.mynfc.ui.voda.VodaViewModel
-
-
-@Composable
-fun TopUpHistoryBlock(modifier: Modifier = Modifier) {
-    CustomBlock(title = "История пополнений") {
-        for (map in topUpHistory) {
-            SecondaryBlock(mainInfo = map["value"], secondaryInfo = map["date"])
-        }
-    }
-}
 
 
 @Composable
@@ -57,12 +49,13 @@ fun CheckBalanceScreenUser(
     completeWriting: Boolean,
     isAddingBalance: Boolean,
     service: Boolean,
+    navController: NavHostController,
     modifier: Modifier = Modifier,
     onNewBalanceChange: ((String) -> Unit) = {},
     onUpdateServerBalance: ((String) -> Unit),
     onDismiss: () -> Unit,
 ) {
-    AppLayout {
+    AppLayout(navController = navController) {
         val uiState = vodaViewModel.uiState.collectAsState()
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
             Column(
@@ -189,7 +182,8 @@ fun CheckBalanceScreenUserPreview() {
         service = false,
         onNewBalanceChange = {println(it)},
         onUpdateServerBalance = {},
-        newBalance = "0"
+        newBalance = "0",
+        navController = rememberNavController(),
     ) {
 
     }

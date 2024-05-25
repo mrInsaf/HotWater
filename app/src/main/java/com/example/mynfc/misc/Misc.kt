@@ -3,6 +3,8 @@ package com.example.mynfc.misc
 import android.nfc.tech.MifareClassic
 import com.example.mynfc.calculateCRC16Modbus
 import com.example.mynfc.ui.voda.VodaUiState
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.StateFlow
 import java.io.IOException
 
@@ -60,5 +62,11 @@ fun calculateFloatBalance(uiState: StateFlow<VodaUiState>): Float {
         else -> uiState.value.newBalance.toFloat()
     } * 100
     return floatBalance
+}
+
+fun jsonStringToList(jsonString: String): List<Map<String, Any>> {
+    val gson = Gson()
+    val type = object : TypeToken<List<Map<String, Any>>>() {}.type
+    return gson.fromJson(jsonString, type)
 }
 

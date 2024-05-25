@@ -14,12 +14,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.mynfc.MainActivity
 import com.example.mynfc.R
 import com.example.mynfc.ui.theme.paddingStart
 
-@RequiresApi(Build.VERSION_CODES.Q)
+
 @Composable
-fun MyNavbar(modifier: Modifier = Modifier) {
+fun MyNavbar(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -43,10 +49,10 @@ fun MyNavbar(modifier: Modifier = Modifier) {
                 .padding(horizontal = paddingStart, vertical = 16.dp)
         ) {
             MyNavbarButton(text = "Проверить баланс", iconId = R.drawable.statistics) {
-                println("Проверить баланс")
+                navController.navigate(MainActivity.Screen.CheckBalance.route)
             }
             MyNavbarButton(text = "Посмотреть историю", iconId = R.drawable.history) {
-                println("Пополнить баланс")
+                navController.navigate(MainActivity.Screen.TransactionHistory.route)
             }
         }
     }
@@ -55,5 +61,5 @@ fun MyNavbar(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 fun MyNavbarPreview() {
-    MyNavbar()
+    MyNavbar(rememberNavController())
 }

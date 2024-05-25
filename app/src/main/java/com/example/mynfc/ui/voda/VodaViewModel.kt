@@ -13,11 +13,13 @@ import androidx.lifecycle.ViewModel
 import com.example.mynfc.misc.calculateFloatBalance
 import com.example.mynfc.misc.calculateResultBytes
 import com.example.mynfc.misc.getHexString
+import com.example.mynfc.misc.jsonStringToList
 import com.example.mynfc.network.confirmTransaction
 import com.example.mynfc.network.createTransactionService
 import com.example.mynfc.network.getCard
 import com.example.mynfc.network.getCardKeys
 import com.example.mynfc.network.getServerBalance
+import com.example.mynfc.network.getTransactionHistoryByCardId
 import com.example.mynfc.network.updateServerBalanceNetworkService
 import com.example.mynfc.network.updateServerBalanceNetworkUser
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +31,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.internal.closeQuietly
 import org.json.JSONObject
 import java.io.IOException
 import java.math.BigInteger
@@ -49,6 +50,7 @@ class VodaViewModel : ViewModel() {
                 try {
                     writeBalance(tagFromIntent)
                     val newServerBalance = confirmTransaction(transactionId = uiState.value.transactionId, confirm = true)
+                    fetchTransactionHistory(uiState.value.cardId)
                     _uiState.update { currentState ->
                         currentState.copy(
                             completeWriting = true,
@@ -184,16 +186,19 @@ class VodaViewModel : ViewModel() {
         var currentSector12Key: ByteArray? = uiState.value.sector12Key
 
         if (!currentCardId.contentEquals(cardId) || currentSector10Key?.size == 0 || currentSector12Key?.size!! == 0) {
-            val response: Deferred<JSONObject> = async {
+            val cardData: Deferred<JSONObject> = async {
                 debugMessage += "\nПолучаю ключи"
                 getCard(cardId)
             }
-            val cardInfo = response.await()
+
+            val cardInfo = cardData.await()
             val cardKeys = getCardKeys(cardInfo)
             val serverBalance = getServerBalance(cardInfo)
 
             currentSector10Key = cardKeys[0]
             currentSector12Key = cardKeys[1]
+
+            fetchTransactionHistory(cardId)
 
             _uiState.update { currentState ->
                 currentState.copy(
@@ -201,7 +206,6 @@ class VodaViewModel : ViewModel() {
                     sector12Key = cardKeys[1],
                     cardId = cardId,
                     serverBalance = serverBalance,
-//                    userInputEnabled = false,
                 )
             }
             debugMessage += "\nПолучил ключи " +
@@ -492,4 +496,20 @@ class VodaViewModel : ViewModel() {
         }
     }
 
+    suspend fun fetchTransactionHistory(cardId: ByteArray?) = coroutineScope {
+        val transactionsData: Deferred<String> = async {
+            debugMessage += "\nПолучаю историю транзакций"
+            getTransactionHistoryByCardId(cardId)
+        }
+
+        val transactionsHistory = jsonStringToList(transactionsData.await())
+        println("transactionsInfo: $transactionsHistory")
+        _uiState.update { currentState ->
+            currentState.copy(
+                transactionList = transactionsHistory
+            )
+        }
+    }
+
 }
+

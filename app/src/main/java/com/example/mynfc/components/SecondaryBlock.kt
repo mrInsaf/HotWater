@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -25,16 +26,16 @@ import com.example.mynfc.R
 import com.example.mynfc.ui.theme.paddingStart
 import com.example.mynfc.ui.theme.paddingTop
 
-@RequiresApi(Build.VERSION_CODES.Q)
+
 @Composable
 fun SecondaryBlock(mainInfo: String?, secondaryInfo: String?, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = modifier
             .fillMaxWidth()
-            .height(70.dp)
             .border(BorderStroke(1.dp, Color.LightGray), shape = RoundedCornerShape(16.dp))
             .padding(horizontal = paddingStart)
+            .height(70.dp)
 
     ) {
         Text(
@@ -42,7 +43,8 @@ fun SecondaryBlock(mainInfo: String?, secondaryInfo: String?, modifier: Modifier
             style = TextStyle(fontSize = 12.sp, color = Color.LightGray),
             fontFamily = FontFamily(
                 Font(R.font.montserrat_regular)
-            )
+            ),
+//            modifier = modifier.padding(bottom = 4.dp)
         )
         Text(
             text = mainInfo ?: "",

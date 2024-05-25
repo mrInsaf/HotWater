@@ -19,6 +19,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.mynfc.AppLayout
 import com.example.mynfc.R
 import com.example.mynfc.components.MainBlock
@@ -48,6 +50,8 @@ fun CheckBalanceScreenService(
 
     service: Boolean,
 
+    navController: NavHostController,
+
     modifier: Modifier = Modifier,
 
     onNewBalanceChange: ((String) -> Unit) = {},
@@ -64,7 +68,7 @@ fun CheckBalanceScreenService(
     onDismissUpdatingServerBalance: () -> Unit,
     onDismissUpdatingCardBalance: () -> Unit,
     ) {
-    AppLayout {
+    AppLayout(navController = navController) {
         val uiState = vodaViewModel.uiState.collectAsState()
 
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
@@ -177,7 +181,8 @@ fun CheckBalanceScreenServicePreview() {
         onDismissCompletedBalance = {},
         onUpdateServerBalanceBegin = {},
         onDismissUpdatingServerBalance = {},
-        onUpdateCardBalance = {}
+        onUpdateCardBalance = {},
+        navController = rememberNavController(),
     ) {
 
     }

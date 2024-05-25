@@ -20,14 +20,18 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.mynfc.AppLayout
 import com.example.mynfc.R
 import com.example.mynfc.components.CustomBlock
 
 @Composable
 fun StartScreen(
-    modifier: Modifier = Modifier) {
-    AppLayout {
+    modifier: Modifier = Modifier,
+    navhost: NavHostController,
+) {
+    AppLayout(navhost) {
         Column(
             verticalArrangement = Arrangement.Center,
             modifier = modifier.fillMaxHeight()
@@ -69,5 +73,5 @@ fun StartScreen(
 @Preview
 @Composable
 fun StartScreenPreview() {
-    StartScreen()
+    StartScreen(navhost = rememberNavController())
 }

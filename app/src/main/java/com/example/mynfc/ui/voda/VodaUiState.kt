@@ -33,7 +33,7 @@ data class VodaUiState (
     var transactionValue: String = "",
     var transactionId: String = "",
 
-    var transactionList: List<List<String>> = listOf(listOf("")),
+    var transactionList: List<Map<String, Any>> = listOf(mapOf()),
 
     var errorOnWriting: Boolean = false,
 )

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -28,6 +29,7 @@ import com.example.mynfc.screens.CheckBalanceScreenService
 
 import com.example.mynfc.screens.CheckBalanceScreenUser
 import com.example.mynfc.screens.StartScreen
+import com.example.mynfc.screens.TransactionHistoryScreen
 
 import com.example.mynfc.ui.theme.MyNFCTheme
 import com.example.mynfc.ui.voda.VodaViewModel
@@ -103,8 +105,8 @@ class MainActivity : ComponentActivity() {
 
     sealed class Screen(val route: String) {
         data object Start : Screen("start")
-        data object CheckBalanceService : Screen("check_balance_service")
-        data object CheckBalanceUser : Screen("check_balance_user")
+        data object CheckBalance : Screen("check_balance")
+        data object TransactionHistory : Screen("transaction_history")
     }
 
     @Composable
@@ -112,56 +114,67 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
 
         val uiState = vodaViewModel.uiState.collectAsState()
-        val checkBalanceScreen =  if(uiState.value.service) Screen.CheckBalanceService.route else Screen.CheckBalanceUser.route
 
-        NavHost(navController = navController, startDestination = checkBalanceScreen) {
+        NavHost(navController = navController, startDestination = Screen.CheckBalance.route) {
             composable(Screen.Start.route) {
-                StartScreen()
+                StartScreen(navhost = navController)
             }
-            composable(Screen.CheckBalanceUser.route) {
-                CheckBalanceScreenUser(
-                    vodaViewModel = vodaViewModel,
-                    username = uiState.value.name,
-                    cardBalance = uiState.value.balance,
-                    serverBalance = uiState.value.serverBalance,
-                    completeWriting = uiState.value.completeWriting,
-                    isAddingBalance = uiState.value.isUpdatingBalance,
-                    newBalance = uiState.value.newBalance,
-                    onNewBalanceChange = { vodaViewModel.onNewBalanceChange(it) },
-                    service = uiState.value.service,
-                    onDismiss = { vodaViewModel.onDismissAddingBalance() },
-                    onUpdateServerBalance = {},
-                )
+            if (uiState.value.service) {
+                composable(Screen.CheckBalance.route) {
+                    CheckBalanceScreenService(
+                        vodaViewModel = vodaViewModel,
+                        username = uiState.value.name,
+                        cardBalance = uiState.value.balance,
+                        serverBalance = uiState.value.serverBalance,
+                        completeWriting = uiState.value.completeWriting,
+                        isAddingBalance = uiState.value.isUpdatingBalance,
+                        newBalance = uiState.value.newBalance,
+                        toCardValue = uiState.value.toCardValue,
+                        toServerValue = uiState.value.toServerValue,
+                        onAddingBalanceChange = { vodaViewModel.onUpdatingBalanceChange() },
+                        onNewBalanceChange = { vodaViewModel.onNewBalanceChange(it) },
+                        onToServerValueChange = { vodaViewModel.onToServerValueChange(it) },
+                        service = uiState.value.service,
+                        onDismissAddingBalance = { vodaViewModel.onDismissAddingBalance() },
+                        onDismissCompletedBalance = { vodaViewModel.onDismissCompletedBalance() },
+                        onUpdateServerBalance = {
+                            val scope = CoroutineScope(EmptyCoroutineContext)
+                            scope.launch {
+                                vodaViewModel.updateServerBalance()
+                            }
+                        },
+                        isUpdatingServerBalance = uiState.value.isUpdatingServerBalance,
+                        isUpdatingCardBalance = uiState.value.isUpdatingCardBalance,
+                        onDismissUpdatingServerBalance = {vodaViewModel.onDismissUpdatingServerBalance()},
+                        onUpdateServerBalanceBegin = { vodaViewModel.onUpdateServerBalanceBegin() },
+                        onDismissUpdatingCardBalance = { vodaViewModel.onDismissUpdatingCardBalance() },
+                        onUpdateCardBalance = { vodaViewModel.updateCardBalance() },
+                        navController = navController
+                    )
+                }
             }
-            composable(Screen.CheckBalanceService.route) {
-                CheckBalanceScreenService(
-                    vodaViewModel = vodaViewModel,
-                    username = uiState.value.name,
-                    cardBalance = uiState.value.balance,
-                    serverBalance = uiState.value.serverBalance,
-                    completeWriting = uiState.value.completeWriting,
-                    isAddingBalance = uiState.value.isUpdatingBalance,
-                    newBalance = uiState.value.newBalance,
-                    toCardValue = uiState.value.toCardValue,
-                    toServerValue = uiState.value.toServerValue,
-                    onAddingBalanceChange = { vodaViewModel.onUpdatingBalanceChange() },
-                    onNewBalanceChange = { vodaViewModel.onNewBalanceChange(it) },
-                    onToServerValueChange = { vodaViewModel.onToServerValueChange(it) },
-                    service = uiState.value.service,
-                    onDismissAddingBalance = { vodaViewModel.onDismissAddingBalance() },
-                    onDismissCompletedBalance = { vodaViewModel.onDismissCompletedBalance() },
-                    onUpdateServerBalance = {
-                        val scope = CoroutineScope(EmptyCoroutineContext)
-                        scope.launch {
-                            vodaViewModel.updateServerBalance()
-                        }
-                    },
-                    isUpdatingServerBalance = uiState.value.isUpdatingServerBalance,
-                    isUpdatingCardBalance = uiState.value.isUpdatingCardBalance,
-                    onDismissUpdatingServerBalance = {vodaViewModel.onDismissUpdatingServerBalance()},
-                    onUpdateServerBalanceBegin = { vodaViewModel.onUpdateServerBalanceBegin() },
-                    onDismissUpdatingCardBalance = { vodaViewModel.onDismissUpdatingCardBalance() },
-                    onUpdateCardBalance = { vodaViewModel.updateCardBalance() },
+            else {
+                composable(Screen.CheckBalance.route) {
+                    CheckBalanceScreenUser(
+                        vodaViewModel = vodaViewModel,
+                        username = uiState.value.name,
+                        cardBalance = uiState.value.balance,
+                        serverBalance = uiState.value.serverBalance,
+                        completeWriting = uiState.value.completeWriting,
+                        isAddingBalance = uiState.value.isUpdatingBalance,
+                        newBalance = uiState.value.newBalance,
+                        onNewBalanceChange = { vodaViewModel.onNewBalanceChange(it) },
+                        service = uiState.value.service,
+                        onDismiss = { vodaViewModel.onDismissAddingBalance() },
+                        onUpdateServerBalance = {},
+                        navController = navController,
+                    )
+                }
+            }
+            composable(Screen.TransactionHistory.route) {
+                TransactionHistoryScreen(
+                    uiState = uiState,
+                    navController = navController
                 )
             }
         }
@@ -174,10 +187,10 @@ class MainActivity : ComponentActivity() {
     }
 }
     @Composable
-    fun AppLayout(content: @Composable () -> Unit) {
+    fun AppLayout(navController: NavHostController, content: @Composable () -> Unit) {
         Scaffold(
             topBar = { Header() },
-            bottomBar = { MyNavbar() },
+            bottomBar = { MyNavbar(navController) },
             content = {
                 // Применение внутреннего отступа для содержимого
                 Surface(Modifier.padding(it), color = Color.White) {

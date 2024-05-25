@@ -9,6 +9,21 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
+
+suspend fun getQuery(route: String): JSONObject = coroutineScope {
+    val url = "http://188.120.254.122:8000/$route"
+    val client = OkHttpClient()
+    val request = Request.Builder()
+        .url(url)
+        .get()
+        .build()
+    val response = client.newCall(request).execute()
+    val jsonResponse = response.body?.string() ?: ""
+    val jsonObject = JSONObject(jsonResponse)
+    println(jsonObject)
+    return@coroutineScope jsonObject
+}
+
 suspend fun postQuery(route: String, jsonBody: String) = coroutineScope {
     val url = "http://188.120.254.122:8000/$route"
     val client = OkHttpClient()
@@ -178,5 +193,20 @@ suspend fun updateServerBalanceNetworkService(
     } else {
         val serverBalance = jsonObject.getString("new_server_balance")
         return@coroutineScope serverBalance
+    }
+}
+
+
+suspend fun getTransactionHistoryByCardId(cardId: ByteArray?) = coroutineScope {
+    val url = "transactions/get-transactions/${getHexString(cardId, cardId?.size ?: 0)}"
+
+    val jsonObject = getQuery(route = url)
+
+    if (jsonObject.has("error")) {
+        val errorMessage = jsonObject.getString("error")
+        println("Ошибка: $errorMessage")
+        throw Exception("Ошибка: $errorMessage")
+    } else {
+        return@coroutineScope jsonObject.getString("transactions")
     }
 }
