@@ -56,14 +56,16 @@ fun MyTextField(
             fontFamily = FontFamily(Font(R.font.montserrat_medium))
         ),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        colors = TextFieldDefaults.textFieldColors(
+        colors = TextFieldDefaults.colors(
             disabledTextColor = Color.Transparent,
-            containerColor = Color.White,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            disabledContainerColor = Color.White,
             errorContainerColor = Color.White,
             unfocusedIndicatorColor = Color.Transparent,
-            errorLeadingIconColor = Color.Red,
             disabledIndicatorColor = Color.Transparent,
-            errorIndicatorColor = Color.Red  // Цвет индикатора ошибки
+            errorIndicatorColor = Color.Red,
+            errorLeadingIconColor = Color.Red,
         ),
         placeholder = { Text(placeholderValue, fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium))) },
         modifier = modifier.fillMaxWidth(fraction = 0.5f)

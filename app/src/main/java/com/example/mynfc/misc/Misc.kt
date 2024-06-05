@@ -1,12 +1,12 @@
 package com.example.mynfc.misc
 
-import android.nfc.tech.MifareClassic
+import android.content.Context
+import co.yml.charts.common.model.Point
 import com.example.mynfc.calculateCRC16Modbus
 import com.example.mynfc.ui.voda.VodaUiState
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.StateFlow
-import java.io.IOException
 
 fun getHexString(bytes: ByteArray?, length: Int): String {
     val hexString = StringBuilder()
@@ -69,4 +69,69 @@ fun jsonStringToList(jsonString: String): List<Map<String, Any>> {
     val type = object : TypeToken<List<Map<String, Any>>>() {}.type
     return gson.fromJson(jsonString, type)
 }
+
+fun retrieveTransactionData(listOfTransactions: List<Map<String, Any>>): List<Map<String, String>> {
+    return listOfTransactions.map { transaction ->
+        val dateParts = transaction["date"].toString().split(" ")
+        val day = dateParts[0]
+        val month = when (dateParts[1]) {
+            "января" -> "01"
+            "февраля" -> "02"
+            "марта" -> "03"
+            "апреля" -> "04"
+            "мая" -> "05"
+            "июня" -> "06"
+            "июля" -> "07"
+            "августа" -> "08"
+            "сентября" -> "09"
+            "октября" -> "10"
+            "ноября" -> "11"
+            "декабря" -> "12"
+            else -> error("Invalid month")
+        }.toString()
+        val year = dateParts[2]
+        val time = dateParts[3]
+        val newCardBalance = transaction["new_card_balance"].toString()
+        val value = transaction["value"].toString()
+
+        mapOf(
+            "day" to day,
+            "month" to month,
+            "newCardBalance" to newCardBalance,
+            "value" to value,
+            "year" to year,
+            "time" to time
+        )
+    }
+}
+
+fun createPointsList(transactionsData: List<Map<String, String>>): List<Map<String, String>> {
+//    val sortedList = transactionsData.sortedWith(compareBy({ it["month"] }, { it["day"] }))
+    val pointsList = mutableListOf<Map<String, String>>()
+
+    transactionsData.forEach { transaction ->
+        val day = transaction["day"] ?: ""
+        val month = transaction["month"] ?: ""
+        val newCardBalance = transaction["newCardBalance"] ?: ""
+        val date = "$day.$month"
+
+        pointsList.add(mapOf("date" to date, "newCardBalance" to newCardBalance))
+    }
+
+    return pointsList.reversed()
+}
+
+
+fun pointsListToData(pointsList: List<Map<String, String>>): List<Point> {
+    return pointsList.mapIndexed { index, point ->
+        val newCardBalance = point["newCardBalance"]?.toFloatOrNull()
+        Point(x = (index).toFloat(), y = newCardBalance ?: 0f)
+    }
+}
+
+fun getCurrentLocale(context: Context): String {
+    val configuration = context.resources.configuration
+    return configuration.locales.get(0).language // Получаем код текущего языка
+}
+
 

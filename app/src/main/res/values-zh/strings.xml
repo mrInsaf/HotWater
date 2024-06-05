@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="name">姓名</string>
+    <string name="card_balance">卡内余额</string>
+    <string name="server_balance">服务器余额</string>
+    <string name="enter_balance">输入余额</string>
+    <string name="attach_card">附上您的卡</string>
+    <string name="to_write_balance">写入 ¥%1$s</string>
+    <string name="cancel">取消</string>
+    <string name="balance_successfully_written">余额记录成功</string>
+    <string name="current_balances">卡余额 -> %1$s ¥\\n服务器余额 -> %2$s ¥</string>
+    <string name="writing_error">写入时出错</string>
+    <string name="reading_error">读卡错误</string>
+    <string name="connection_error">连接服务器时出错</string>
+    <string name="app_name">热水</string>
+
+    <string name="main">主页</string>
+    <string name="history">充值历史</string>
+    <string name="settings">定制</string>
+
+    <string name="currency_symbol">¥</string>
+    <string name="to_card">保存到卡</string>
+    <string name="to_server">保存到服务器</string>
+
+    <string name="top_up_history">充值历史</string>
+
+    <string name="statistics">统计</string>
+</resources>

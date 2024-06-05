@@ -152,7 +152,7 @@ fun CheckBalanceScreenService(
                     onToServerConfirmation = { onUpdateServerBalance() },
                 )
 
-                TopUpHistoryGraphicBlock()
+//                TopUpHistoryGraphicBlock()
             }
         }
     }
@@ -168,7 +168,7 @@ fun CheckBalanceScreenServicePreview() {
         serverBalance = "0",
         isAddingBalance = false,
         isUpdatingServerBalance = false,
-        isUpdatingCardBalance = true,
+        isUpdatingCardBalance = false,
         completeWriting = false,
         service = true,
         onAddingBalanceChange = { },

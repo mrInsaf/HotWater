@@ -1,4 +1,29 @@
 <resources>
     <string name="app_name">Горячая вода</string>
 <!--    <string name="app_name">Горячая Вода Сервис</string>-->
+
+    <string name="name">Имя</string>
+    <string name="card_balance">Баланс на карте</string>
+    <string name="server_balance">Баланс на сервере</string>
+    <string name="enter_balance">Введите баланс</string>
+    <string name="attach_card">Приложите карту</string>
+    <string name="to_write_balance">К записи ¥%1$s</string>
+    <string name="cancel">Отмена</string>
+    <string name="current_balances">Баланс карты -> %1$s ¥\nБаланс сервера -> %2$s ¥</string>
+    <string name="writing_error">Ошибка при записи</string>
+    <string name="connection_error">Ошибка при соединении с сервером</string>
+    <string name="balance_successfully_written">Баланс успешно записан</string>
+    <string name="reading_error">Ошибка при чтении</string>
+
+    <string name="main">Главный</string>
+    <string name="history">История</string>
+    <string name="settings">Настройки</string>
+
+    <string name="currency_symbol">¥</string>
+    <string name="to_card">На карту</string>
+    <string name="to_server">На сервер</string>
+
+    <string name="top_up_history">История пополнений</string>
+
+    <string name="statistics">Статистика</string>
 </resources>

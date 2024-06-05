@@ -1,5 +1,8 @@
 package com.example.mynfc.ui.voda
 
+import com.example.mynfc.errorTypes.VodaErrorType
+import java.util.Locale
+
 data class VodaUiState (
     var service: Boolean = false,
 
@@ -26,6 +29,9 @@ data class VodaUiState (
     var isUpdatingServerBalance: Boolean = false,
     var isUpdatingCardBalance: Boolean = false,
 
+    var isWriting: Boolean = false,
+    var isReading: Boolean = false,
+
     var completeWriting: Boolean = false,
 
     var userInputEnabled: Boolean = false,
@@ -33,8 +39,14 @@ data class VodaUiState (
     var transactionValue: String = "",
     var transactionId: String = "",
 
-    var transactionList: List<Map<String, Any>> = listOf(mapOf()),
+    var transactionList: List<Map<String, Any>> = listOf(),
 
-    var errorOnWriting: Boolean = false,
+    var error: VodaErrorType? = null,
+
+    var currentLocale: String = "ru",
+
+//    var errorOnWriting: Boolean = false,
+//    var errorOnReading: Boolean = false,
+//    var errorOnConnection: Boolean = false,
 )
 

@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -40,23 +41,27 @@ fun MyNavbar(
                 color = Color.White,
                 shape = RoundedCornerShape(24.dp)
             )
-            .heightIn(min = 10.dp, max = 80.dp),
+            .heightIn(min = 10.dp, max = 70.dp),
     ) {
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceAround,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = paddingStart, vertical = 16.dp)
         ) {
-            MyNavbarButton(text = "Проверить баланс", iconId = R.drawable.statistics) {
+            MyNavbarButton(text = stringResource(R.string.main), iconId = R.drawable.statistics) {
                 navController.navigate(MainActivity.Screen.CheckBalance.route)
             }
-            MyNavbarButton(text = "Посмотреть историю", iconId = R.drawable.history) {
+            MyNavbarButton(text = stringResource(R.string.history), iconId = R.drawable.history) {
                 navController.navigate(MainActivity.Screen.TransactionHistory.route)
             }
+            MyNavbarButton(text = stringResource(R.string.settings), iconId = R.drawable.settings) {
+                navController.navigate(MainActivity.Screen.Settings.route)
+            }
+        }
         }
     }
-}
+
 @RequiresApi(Build.VERSION_CODES.Q)
 @Preview
 @Composable

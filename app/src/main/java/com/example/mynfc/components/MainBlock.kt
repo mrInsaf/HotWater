@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,6 +15,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mynfc.R
 
@@ -22,6 +24,7 @@ import com.example.mynfc.R
 fun MainBlock(
     mainInfo: String,
     secondaryInfo: String,
+    gifEnabled: Boolean = false,
     modifier: Modifier = Modifier,
     buttonText: String? = null,
     onButtonClick: (() -> Unit)? = null,
@@ -43,6 +46,9 @@ fun MainBlock(
                 modifier = modifier
 //                    .weight(4f)
             )
+            if (gifEnabled) {
+                GifImage(gifId = R.drawable.bars_loading, modifier = Modifier.size(30.dp))
+            }
 //            if (service && buttonText != null && onButtonClick != null) {
 //                ButtonWithIcon(
 //                    text = buttonText,

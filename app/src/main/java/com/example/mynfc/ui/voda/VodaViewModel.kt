@@ -1,7 +1,10 @@
 package com.example.mynfc.ui.voda
 
+import android.app.Activity
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.MifareClassic
@@ -9,7 +12,9 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.app.ActivityCompat.recreate
 import androidx.lifecycle.ViewModel
+import com.example.mynfc.errorTypes.VodaErrorType
 import com.example.mynfc.misc.calculateFloatBalance
 import com.example.mynfc.misc.calculateResultBytes
 import com.example.mynfc.misc.getHexString
@@ -34,6 +39,8 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.IOException
 import java.math.BigInteger
+import java.net.ConnectException
+import java.util.Locale
 import kotlin.coroutines.EmptyCoroutineContext
 
 class VodaViewModel : ViewModel() {
@@ -49,13 +56,21 @@ class VodaViewModel : ViewModel() {
             if (_uiState.value.isUpdatingBalance) {
                 try {
                     writeBalance(tagFromIntent)
-                    val newServerBalance = confirmTransaction(transactionId = uiState.value.transactionId, confirm = true)
-                    fetchTransactionHistory(uiState.value.cardId)
+                    println("new card balance is: ${uiState.value.balance}")
+                    val newServerBalance = confirmTransaction(
+                        transactionId = uiState.value.transactionId,
+                        confirm = true,
+                        newCardBalance = uiState.value.balance
+                        )
+                    fetchTransactionHistory()
                     _uiState.update { currentState ->
                         currentState.copy(
                             completeWriting = true,
                             newBalance = "",
                             unacceptableUserInput = false,
+                            isUpdatingBalance = false,
+                            isUpdatingServerBalance = false,
+                            isUpdatingCardBalance = false,
                             serverBalance = newServerBalance,
                         )
                     }
@@ -63,22 +78,44 @@ class VodaViewModel : ViewModel() {
                 catch (e: Exception) {
                     _uiState.update {currentState ->
                         currentState.copy(
-                            errorOnWriting = true,
+                            error = VodaErrorType.WRITING_ERROR,
                             isUpdatingBalance = false,
+                            newBalance = "",
                             isUpdatingServerBalance = false,
                             isUpdatingCardBalance = false,
                             transactionId = "",
                         )
                     }
                 }
-
             } else {
                 try {
                     readData(tagFromIntent)
+                } catch (e: ConnectException) {
+                    println("Ошибка подключения: $e")
+                    _uiState.update {
+                        it.copy(
+                            error = VodaErrorType.CONNECTION_ERROR,
+                            isReading = false
+                        )
+                    }
+                    debugMessage += "\n $e"
                 } catch (e: Exception) {
-                    println(e)
+                    println("Ошибка при чтении: $e")
+                    _uiState.update {
+                        it.copy(
+                            error = VodaErrorType.READING_ERROR,
+                            isReading = false
+                        )
+                    }
                     debugMessage += "\n $e"
                 }
+
+            }
+            _uiState.update {
+                it.copy(
+                    isReading = false,
+                    isWriting = false,
+                )
             }
         }
     }
@@ -86,6 +123,7 @@ class VodaViewModel : ViewModel() {
 
     private suspend fun writeBalance(tag: Tag?) = coroutineScope {
         println("started writing")
+        _uiState.update { it.copy(isWriting = true) }
         val mfc = MifareClassic.get(tag)
         val readArray = readData(tag)
 
@@ -131,13 +169,13 @@ class VodaViewModel : ViewModel() {
                         _uiState.update { it.copy(transactionId = transactionId) }
                     }
                     else if (uiState.value.isUpdatingBalance) {
+                        println("yebani transaction value: $transactionValue")
                         val transactionId = createTransactionService(cardId = cardId, value = transactionValue)
                         _uiState.update { it.copy(transactionId = transactionId) }
                     }
                     println("new balance: $updatedBalance")
                     _uiState.update { it.copy(
                         balance = updatedBalance,
-                        isUpdatingBalance = false,
                         ) }
                 }
                 try {
@@ -171,6 +209,8 @@ class VodaViewModel : ViewModel() {
     private suspend fun readData(tag: Tag?): Array<ByteArray?> = coroutineScope {
         val mfc = MifareClassic.get(tag)
         mfc.connect()
+        _uiState.update { it.copy(isReading = true) }
+
         val cardId = tag?.id
         var data: ByteArray?
         var authA: Boolean
@@ -198,8 +238,6 @@ class VodaViewModel : ViewModel() {
             currentSector10Key = cardKeys[0]
             currentSector12Key = cardKeys[1]
 
-            fetchTransactionHistory(cardId)
-
             _uiState.update { currentState ->
                 currentState.copy(
                     sector10Key = cardKeys[0],
@@ -208,6 +246,9 @@ class VodaViewModel : ViewModel() {
                     serverBalance = serverBalance,
                 )
             }
+
+            fetchTransactionHistory()
+
             debugMessage += "\nПолучил ключи " +
                     "${getHexString(currentSector10Key, currentSector10Key.size)}, " +
                     getHexString(currentSector12Key, currentSector12Key.size)
@@ -267,9 +308,14 @@ class VodaViewModel : ViewModel() {
     }
 
     fun onUpdatingBalanceChange() {
+        val newBalance = uiState.value.newBalance.toFloat()
+        val currentBalance = uiState.value.balance.toFloat()
+        val transactionValue = newBalance - currentBalance
+
         _uiState.update { currentState ->
             currentState.copy(
-                isUpdatingBalance = true
+                isUpdatingBalance = true,
+                transactionValue = transactionValue.toString()
             )
         }
         println("is adding balance ${_uiState.value.isUpdatingBalance}")
@@ -479,7 +525,11 @@ class VodaViewModel : ViewModel() {
 
     fun updateCardBalance() {
         val toCardValue = uiState.value.toCardValue.toFloat()
-        val newBalance = uiState.value.balance.toFloat() + toCardValue
+        val currentBalance = uiState.value.balance.toFloat()
+        val newBalance = currentBalance + toCardValue
+
+        println("updateCardBalance toCardValue: $toCardValue, newbalance: $newBalance")
+//        val transactionValue =
         _uiState.update { currentState ->
             currentState.copy(
                 isUpdatingBalance = true,
@@ -491,18 +541,19 @@ class VodaViewModel : ViewModel() {
     fun onDismissError() {
         _uiState.update { currentState ->
             currentState.copy(
-                errorOnWriting = false
+                error = null,
             )
         }
     }
 
-    suspend fun fetchTransactionHistory(cardId: ByteArray?) = coroutineScope {
+    suspend fun fetchTransactionHistory() = coroutineScope {
+        val cardId = uiState.value.cardId
         val transactionsData: Deferred<String> = async {
             debugMessage += "\nПолучаю историю транзакций"
             getTransactionHistoryByCardId(cardId)
         }
 
-        val transactionsHistory = jsonStringToList(transactionsData.await())
+        val transactionsHistory = jsonStringToList(transactionsData.await()).reversed()
         println("transactionsInfo: $transactionsHistory")
         _uiState.update { currentState ->
             currentState.copy(
@@ -511,5 +562,34 @@ class VodaViewModel : ViewModel() {
         }
     }
 
+    suspend fun fetchServerBalance() = coroutineScope {
+        val cardId = uiState.value.cardId
+        val cardData: Deferred<JSONObject> = async {
+            debugMessage += "\nПолучаю ключи"
+            getCard(cardId)
+        }
+
+        val cardInfo = cardData.await()
+        val serverBalance = getServerBalance(cardInfo)
+
+        _uiState.update { it.copy(serverBalance = serverBalance) }
+        return@coroutineScope
+    }
+
+    fun changeLocale(context: Context, newLocale: String) {
+        val locale = Locale(newLocale)
+        Locale.setDefault(locale)
+        val configuration = Configuration(context.resources.configuration)
+        configuration.setLocale(locale)
+        context.createConfigurationContext(configuration)
+        context.resources.updateConfiguration(configuration, context.resources.displayMetrics)
+
+        _uiState.update { it.copy(currentLocale = newLocale) }
+        val activity = context as? Activity
+        activity?.recreate()
+    }
+
+
 }
+
 

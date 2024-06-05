@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +35,7 @@ fun TopUpBlockUser(
     CustomBlock(title = title, modifier = modifier) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text ("¥ ", fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium)))
+                Text (stringResource(R.string.currency_symbol), fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_medium)))
                 MyTextField(
                     enabled = enabled,
                     onValueChange = onValueChange,
@@ -59,7 +60,7 @@ fun TopUpBlockUser(
                             painter = painterResource(id = R.drawable.download),
                             contentDescription = "",
                             modifier = modifier.size(20.dp))
-                        Text(text = "На карту")
+                        Text(text = stringResource(R.string.to_card))
                     }
                 }
                 Spacer(modifier = Modifier.size(8.dp))
@@ -77,7 +78,7 @@ fun TopUpBlockUser(
                             painter = painterResource(id = R.drawable.cloud_computing),
                             contentDescription = "",
                             modifier = modifier.size(20.dp))
-                        Text(text = "На сервер")
+                        Text(text = stringResource(R.string.to_server))
                     }
                 }
 
@@ -85,6 +86,7 @@ fun TopUpBlockUser(
         }
     }
 }
+
 
 @Preview
 @Composable

@@ -90,7 +90,7 @@ suspend fun createTransactionService(cardId: ByteArray?, value: String): String 
     val jsonBody = """
                     {
                         "cardId": "${getHexString(cardId, cardId?.size ?: 0)}",
-                        "value": "$value",
+                        "value": "$value"
                     }
                 """.trimIndent()
     val jsonObject = postQuery(route = url, jsonBody = jsonBody)
@@ -150,13 +150,14 @@ suspend fun updateServerBalanceNetworkUser(
     }
 }
 
-suspend fun confirmTransaction(transactionId: String, confirm: Boolean) = coroutineScope {
+suspend fun confirmTransaction(transactionId: String, confirm: Boolean, newCardBalance: String = "") = coroutineScope {
     println("started confirming transaction")
     val url = "transactions/confirm-transaction/"
     val jsonBody = """
                     {
                         "transactionId": "$transactionId",
-                        "confirm": "$confirm"
+                        "confirm": "$confirm",
+                        "newCardBalance": "$newCardBalance"
                     }
                 """.trimIndent()
     val jsonObject = postQuery(route = url, jsonBody = jsonBody)

@@ -25,17 +25,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mynfc.components.Header
 import com.example.mynfc.components.MyNavbar
+import com.example.mynfc.misc.getCurrentLocale
 import com.example.mynfc.screens.CheckBalanceScreenService
 
 import com.example.mynfc.screens.CheckBalanceScreenUser
+import com.example.mynfc.screens.SettingsScreen
 import com.example.mynfc.screens.StartScreen
 import com.example.mynfc.screens.TransactionHistoryScreen
 
 import com.example.mynfc.ui.theme.MyNFCTheme
 import com.example.mynfc.ui.voda.VodaViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 
@@ -50,14 +54,14 @@ class MainActivity : ComponentActivity() {
     private lateinit var mFilters: Array<IntentFilter>
     private lateinit var mTechLists: Array<Array<String>>
 
-    val vodaViewModel = VodaViewModel()
+    private val vodaViewModel = VodaViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        runBlocking() {
-            launch {
-            }
-        }
+
+        val currentLanguage = getCurrentLocale(this)
+        vodaViewModel.uiState.value.currentLocale = currentLanguage
+
         mAdapter = NfcAdapter.getDefaultAdapter(this)
         mPendingIntent = PendingIntent.getActivity(
             this, 0, Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
@@ -92,6 +96,14 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters, mTechLists)
+
+        if (vodaViewModel.uiState.value.cardId!!.isNotEmpty()) {
+            val scope = CoroutineScope(EmptyCoroutineContext)
+            scope.launch {
+                vodaViewModel.fetchTransactionHistory()
+                vodaViewModel.fetchServerBalance()
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -107,6 +119,7 @@ class MainActivity : ComponentActivity() {
         data object Start : Screen("start")
         data object CheckBalance : Screen("check_balance")
         data object TransactionHistory : Screen("transaction_history")
+        data object Settings : Screen("settings")
     }
 
     @Composable
@@ -167,7 +180,9 @@ class MainActivity : ComponentActivity() {
                         service = uiState.value.service,
                         onDismiss = { vodaViewModel.onDismissAddingBalance() },
                         onUpdateServerBalance = {},
+                        transactionList = uiState.value.transactionList,
                         navController = navController,
+                        onDismissError = { vodaViewModel.onDismissError() }
                     )
                 }
             }
@@ -175,6 +190,14 @@ class MainActivity : ComponentActivity() {
                 TransactionHistoryScreen(
                     uiState = uiState,
                     navController = navController
+                )
+            }
+
+            composable(Screen.Settings.route) {
+                SettingsScreen(
+                    uiState = uiState,
+                    navController = navController,
+                    changeLocale = { context, newLocale -> vodaViewModel.changeLocale(context, newLocale) }
                 )
             }
         }

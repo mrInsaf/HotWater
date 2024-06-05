@@ -18,7 +18,7 @@ fun ServerBalanceTransactionDialogUser(
 ) {
     if (toServer) {
         MyDialog(
-            text = "Записать $newServerBalance ¥ на сервер?",
+            text = "Зачислить $newServerBalance ¥ на сервер?",
             iconId = R.drawable.cloud_computing,
             onConfirmation = onToServerConfirmation,
             onDismissRequest = onToServerDismiss
@@ -26,7 +26,7 @@ fun ServerBalanceTransactionDialogUser(
     }
     if(toCard) {
         MyDialog(
-            text = "Записать $newCardBalance ¥ на карту?",
+            text = "Зачислить $newCardBalance ¥ на карту?",
             iconId = R.drawable.download,
             onConfirmation = onToCardConfirmation,
             onDismissRequest = onToCardDismiss
