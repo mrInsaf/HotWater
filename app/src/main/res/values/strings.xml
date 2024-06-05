@@ -26,4 +26,12 @@
     <string name="top_up_history">История пополнений</string>
 
     <string name="statistics">Статистика</string>
+
+    <string name="confirm">Подтвердить</string>
+
+    <string name="write_to_server">Записать %1$s ¥ на сервер?</string>
+    <string name="subtract_from_server">Списать %1$s ¥ с сервера?</string>
+
+    <string name="credit_to_server">Зачислить %1$s ¥ на сервер?</string>
+    <string name="credit_to_card">Зачислить %1$s ¥ на карту?</string>
 </resources>

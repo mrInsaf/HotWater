@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.mynfc.R
 
@@ -24,7 +25,7 @@ fun ServerBalanceTransactionDialogService(
 ) {
     if (toServer) {
         MyDialog(
-            text = "Записать $newServerBalance ¥ на сервер?",
+            text = stringResource(R.string.write_to_server, newServerBalance),
             iconId = R.drawable.cloud_computing,
             onConfirmation = onToServerConfirmation,
             onDismissRequest = onToServerDismiss
@@ -32,13 +33,14 @@ fun ServerBalanceTransactionDialogService(
     }
     if(toCard) {
         MyDialog(
-            text = "Списать $newCardBalance ¥ с сервера?",
+            text = stringResource(R.string.subtract_from_server, newCardBalance),
             iconId = R.drawable.download,
             onConfirmation = onToCardConfirmation,
             onDismissRequest = onToCardDismiss
         )
     }
 }
+
 
 @Preview
 @Composable

@@ -25,4 +25,12 @@
     <string name="top_up_history">充值历史</string>
 
     <string name="statistics">统计</string>
+
+    <string name="confirm">确认</string>
+
+    <string name="write_to_server">将 %1$s ¥ 写入服务器？</string>
+    <string name="subtract_from_server">从服务器中扣除 %1$s ¥？</string>
+
+    <string name="credit_to_server">将 %1$s ¥ 放入服务器？</string>
+    <string name="credit_to_card">将 %1$s ¥ 存入卡上？</string>
 </resources>
